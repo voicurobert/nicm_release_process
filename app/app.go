@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"fmt"
 	"github.com/voicurobert/nicm_release_process/automator/process"
-	"github.com/voicurobert/nicm_release_process/automator/process2"
 	"os"
 )
 
@@ -13,7 +12,7 @@ func StartApplication() {
 	scanner := bufio.NewScanner(os.Stdin)
 	startProcess := process.Process
 	for {
-		fmt.Printf("Waiting for command... (use help to see possible commands): %s-> \n", startProcess.Name)
+		fmt.Printf("Command [%s]:", startProcess.GetName())
 		scanner.Scan()
 		textCommand := scanner.Text()
 
@@ -41,12 +40,6 @@ func StartApplication() {
 			fmt.Println("Unknown command...try again")
 		}
 	}
-}
-
-func StartApp() {
-	fmt.Println("Started NICM Release Automator!")
-	scanner := bufio.NewScanner(os.Stdin)
-	process2.Process.Run(scanner)
 }
 
 func closeApplication() {

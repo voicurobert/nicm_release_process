@@ -24,41 +24,69 @@ const (
 )
 
 var (
-	Process = &userProcess{Name: NICMProcess}
+	Process UserProcessInterface
 )
 
 type userProcess struct {
 	Name            string
-	processes       []*userProcess
-	nextUserProcess *userProcess
+	processes       []UserProcessInterface
+	nextUserProcess UserProcessInterface
 	internalProcess commands.ReleaseProcessInterface
 }
 
 type UserProcessInterface interface {
 	NextProcess(string) UserProcessInterface
 	Execute() UserProcessInterface
+	setNextProcess(command string, nextProcess UserProcessInterface)
+	GetName() string
+	getNextProcess() UserProcessInterface
+	PrintPossibleProcesses()
+	PrintCommands()
+	PrintOptions()
 }
 
 func init() {
+	Process = &userProcess{Name: NICMProcess}
+	initPrepareReleaseProcess()
+	initActivateReleaseProcess()
+}
+
+func initPrepareReleaseProcess() {
 	prepareReleaseProcess := userProcess{Name: PrepareReleaseProcess}
-	clientReleaseProcess := userProcess{Name: ClientReleaseProcess, internalProcess: client.ReleaseProcess}
-	clientReleaseProcess.internalProcess.Init()
 
-	serverReleaseProcess := userProcess{Name: ServerReleaseProcess, internalProcess: server.ReleaseProcess}
+	Process.setNextProcess(PrepareReleaseProcess, &prepareReleaseProcess)
 
-	prepareReleaseProcess.setNextProcess(ClientReleaseProcess, &clientReleaseProcess)
-	prepareReleaseProcess.setNextProcess(ServerReleaseProcess, &serverReleaseProcess)
-
-	clientReleaseProcess.setNextProcess(PreviousProcess, &prepareReleaseProcess)
-	executeClientProcess := userProcess{Name: ExecuteProcess}
-	clientReleaseProcess.setNextProcess(ExecuteProcess, &executeClientProcess)
-
-	serverReleaseProcess.setNextProcess(PreviousProcess, &prepareReleaseProcess)
-	executeServerProcess := userProcess{Name: ExecuteProcess}
-	serverReleaseProcess.setNextProcess(ExecuteProcess, &executeServerProcess)
+	initClientReleaseProcess(&prepareReleaseProcess)
+	initServerReleaseProcess(&prepareReleaseProcess)
 
 	prepareReleaseProcess.setNextProcess(PreviousProcess, Process)
+	prepareReleaseProcess.setNextProcess(HelpCommandText, Process)
+	prepareReleaseProcess.setNextProcess(ExitCommandText, Process)
+}
 
+func initClientReleaseProcess(releaseProcess UserProcessInterface) {
+	clientReleaseProcess := userProcess{Name: ClientReleaseProcess, internalProcess: client.ReleaseProcess}
+
+	releaseProcess.setNextProcess(ClientReleaseProcess, &clientReleaseProcess)
+
+	clientReleaseProcess.internalProcess.Init()
+
+	clientReleaseProcess.setNextProcess(PreviousProcess, releaseProcess)
+	executeClientProcess := userProcess{Name: ExecuteProcess}
+	clientReleaseProcess.setNextProcess(ExecuteProcess, &executeClientProcess)
+	clientReleaseProcess.setNextProcess(HelpCommandText, Process)
+	clientReleaseProcess.setNextProcess(ExitCommandText, Process)
+}
+
+func initServerReleaseProcess(releaseProcess UserProcessInterface) {
+	serverReleaseProcess := userProcess{Name: ServerReleaseProcess, internalProcess: server.ReleaseProcess}
+	releaseProcess.setNextProcess(ServerReleaseProcess, &serverReleaseProcess)
+	serverReleaseProcess.setNextProcess(PreviousProcess, releaseProcess)
+	executeServerProcess := userProcess{Name: ExecuteProcess}
+	serverReleaseProcess.setNextProcess(ExecuteProcess, &executeServerProcess)
+}
+
+func initActivateReleaseProcess() {
 	activateReleaseProcess := userProcess{Name: ActivateReleaseProcess}
 	nigReleaseProcess := userProcess{Name: NIGReleaseProcess}
 	gearsReleaseProcess := userProcess{Name: GearsReleaseProcess}
@@ -74,11 +102,10 @@ func init() {
 	nigReleaseProcess.setNextProcess(ExecuteProcess, &executeNIGRelease)
 	activateReleaseProcess.setNextProcess(PreviousProcess, Process)
 
-	Process.setNextProcess(PrepareReleaseProcess, &prepareReleaseProcess)
 	Process.setNextProcess(ActivateReleaseProcess, &activateReleaseProcess)
 }
 
-func (up *userProcess) setNextProcess(command string, nextProcess *userProcess) {
+func (up *userProcess) setNextProcess(command string, nextProcess UserProcessInterface) {
 	userCommand := userProcess{Name: command, nextUserProcess: nextProcess}
 	up.processes = append(up.processes, &userCommand)
 }
@@ -86,22 +113,22 @@ func (up *userProcess) setNextProcess(command string, nextProcess *userProcess) 
 func (up *userProcess) PrintPossibleProcesses() {
 	for _, process := range up.processes {
 		fmt.Printf("\t")
-		fmt.Print(process.Name)
+		fmt.Print(process.GetName())
 		fmt.Printf("\n")
 	}
 }
 
-func (up *userProcess) NextProcess(cmd string) *userProcess {
+func (up *userProcess) NextProcess(cmd string) UserProcessInterface {
 	for _, process := range up.processes {
-		if process.Name == cmd {
-			return process.nextUserProcess
+		if process.GetName() == cmd {
+			return process.getNextProcess()
 		}
 	}
 	fmt.Println("Unknown command...")
 	return up
 }
 
-func (up *userProcess) Execute() *userProcess {
+func (up *userProcess) Execute() UserProcessInterface {
 	if up.internalProcess == nil {
 		return up.NextProcess(PreviousProcess)
 	}
@@ -110,6 +137,14 @@ func (up *userProcess) Execute() *userProcess {
 		panic(err)
 	}
 	return up.NextProcess(PreviousProcess)
+}
+
+func (up *userProcess) GetName() string {
+	return up.Name
+}
+
+func (up *userProcess) getNextProcess() UserProcessInterface {
+	return up.nextUserProcess
 }
 
 func (up *userProcess) PrintCommands() {
