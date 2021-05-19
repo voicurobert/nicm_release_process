@@ -1,0 +1,72 @@
+pasi script nicm release
+
+	NIG windows:
+		// pentru client windows
+		1. delete .magikc files
+		2. git pull
+		3. build all nicm images
+		4. imaginile nicm_open si nicm_closed puse writable (scos readonly)
+		5. creare arhiva de client - nicm.zip (fara *.magik) cu magikc
+
+
+		// pentru server linux, pasii 1-4 de mai sus sunt la fel
+		1. creare arhiva pentru linux contine doar nicm_products, mai putin night_scripts, nig. La care se adauga dynamic_patches si diagnostics_mysql_151 (din externals)
+		2. copiere prin scp pe linux (node1932 172.18.49.25) locatia /nicm/
+		// pasi din masina de linux
+		1. stergere nicm_products_old
+		2. redenumire nicm_products -> nicm_products_old
+		3. dezarhivare nicm_products
+		4. build imagini
+			4b run .sh din /nicm/build_nicm_linux/lni_server@nicm_prod/start/build_all_nicm_closed_and_open.sh
+			4a run .sh din /nicm/build_nicm_linux/job_server@nicm_prod/start/build_all_nicm_closed_and_open.sh
+		5. !!! conectare prin ssh si rulare comenzi de linux !!!
+
+
+	build normal de imagini pe nig si gears
+	nig:
+	1. dezactivare task GSS agent disconnected din task scheduler
+	2. rulare power shell NIG\nicm_master\run\nicm430\restart_gss_agents.ps1 - fara liniile 25, 26 TODO de facut un nou script
+	3. git pull
+	4. delete magikc
+	5. build
+	6. rulare power shell NIG\nicm_master\run\nicm430\restart_gss_agents.ps1
+	7. activate task GSS agent disconnected din task scheduler
+
+	gears:
+	1. optional:
+		* pregatit pentru oprire
+		* dezactivat jenkings service
+	1. git pull
+	2. build
+	3. optional - pornire serviciu jenkings
+
+
+SCP:
+1 creare fisier care prin winscp citeste comenzile:
+fisier winscp: C:\ssh\WinSCP\WinSCP.com /ini=nul /script=C:\data_impex\importanta_site_ccri\data_upload_script.txt > C:\data_impex\importanta_site_ccri\log.txt 2>&1
+
+open sftp://ccriusr:ccriusr_751@ccri.srv.orange.intra -hostkey="ssh-rsa 2048 5b:cd:a4:0f:a5:00:5f:06:cf:0c:e3:34:a8:a2:d0:e2"
+# Upload file
+option confirm off
+put C:\reports\Importanta_site\importanta_site.txt /ccriusr/data/importanta_site_nicm/
+put C:\reports\Importanta_site\importanta_site_other_reports.txt /ccriusr/data/importanta_site_nicm/
+# Exit WinSCP
+exit
+
+
+
+1. prepare release
+	1a prepare release for client
+	1b prepare release for server
+
+2. activate release
+	2a activate release for nig
+		1. dezactivare task GSS agent disconnected din task scheduler
+		2. rulare power shell NIG\nicm_master\run\nicm430\restart_gss_agents.ps1 - fara liniile 25, 26 TODO de facut un nou script
+		3. git pull
+		4. delete magikc
+		5. build
+		6. rulare power shell NIG\nicm_master\run\nicm430\restart_gss_agents.ps1
+		7. activate task GSS agent disconnected din task scheduler
+	2b activate release for gears
+
