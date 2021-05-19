@@ -12,12 +12,11 @@ type clientReleaseProcess struct {
 }
 
 const (
-	workingPath        = "C:\\sw\\nicm\\"
-	gitPath            = workingPath + "nicm_master\\"
-	deleteFilesCommand = "C:\\sw\\demo\\"
-	buildPath          = "nicm_master\\run\\nicm430"
-	antCommand         = "build"
-	imagesPath         = "nicm_master\\run\\nicm430\\images\\main"
+	workingPath = "C:\\sw\\nicm\\"
+	gitPath     = "nicm_master\\"
+	buildPath   = "run\\nicm430"
+	antCommand  = "build"
+	imagesPath  = "images\\main"
 )
 
 var (
@@ -41,11 +40,11 @@ func (c *clientReleaseProcess) Init() {
 
 func (c *clientReleaseProcess) initOptions() {
 	c.Options = &options.Options{}
-	c.Options.SetWorkingPath("C:\\sw\\nicm\\")
-	c.Options.SetGitPath("nicm_master\\")
-	c.Options.SetBuildPath("run\\nicm430")
-	c.Options.SetAntCommand("build")
-	c.Options.SetImagesPath("images\\main")
+	c.Options.SetWorkingPath(workingPath)
+	c.Options.SetGitPath(gitPath)
+	c.Options.SetBuildPath(buildPath)
+	c.Options.SetAntCommand(antCommand)
+	c.Options.SetImagesPath(imagesPath)
 }
 
 func (c *clientReleaseProcess) initCommands() {
@@ -64,4 +63,24 @@ func (c *clientReleaseProcess) PrintCommands() {
 
 func (c *clientReleaseProcess) PrintOptions() {
 	c.Options.Print()
+}
+
+func (c *clientReleaseProcess) SetWorkingPath(path string) {
+	c.Options.SetWorkingPath(path)
+}
+
+func (c *clientReleaseProcess) SetBuildPath(path string) {
+	c.Options.SetBuildPath(path)
+}
+
+func (c *clientReleaseProcess) SetAntCommand(path string) {
+	c.Options.SetAntCommand(path)
+}
+
+func (c *clientReleaseProcess) SetImagesPath(path string) {
+	c.Options.SetImagesPath(path)
+}
+
+func (c *clientReleaseProcess) SetGitPath(path string) {
+	c.Options.SetGitPath(path)
 }

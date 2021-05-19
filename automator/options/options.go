@@ -6,6 +6,24 @@ import (
 	"strings"
 )
 
+const (
+	PrintOptions   = "print_options"
+	SetOptions     = "set_options"
+	SetWorkingPath = "set_working_path"
+	SetGitPath     = "set_git_path"
+	SetBuildPath   = "set_build_path"
+	SetAntCommand  = "set_ant_command"
+	SetImagesPath  = "set_images_path"
+)
+
+type SetOptionsInterface interface {
+	SetWorkingPath(path string)
+	SetGitPath(path string)
+	SetBuildPath(path string)
+	SetAntCommand(path string)
+	SetImagesPath(path string)
+}
+
 type Options struct {
 	WorkingPath string
 	GitPath     string
@@ -60,6 +78,6 @@ func (o *Options) Print() {
 	for i := 0; i < attrs.NumField(); i++ {
 		name := attrs.Type().Field(i).Name
 		value := attrs.Field(i).Interface()
-		fmt.Printf("Option: %s --- Value: %s \n", name, value)
+		fmt.Printf("\t%s -> %s \n", name, value)
 	}
 }

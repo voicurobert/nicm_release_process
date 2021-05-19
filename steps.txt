@@ -8,8 +8,7 @@ pasi script nicm release
 		4. imaginile nicm_open si nicm_closed puse writable (scos readonly)
 		5. creare arhiva de client - nicm.zip (fara *.magik) cu magikc
 
-
-		// pentru server linux, pasii 1-4 de mai sus sunt la fel
+    Linux server, pasii 1-4 de mai sus sunt la fel
 		1. creare arhiva pentru linux contine doar nicm_products, mai putin night_scripts, nig. La care se adauga dynamic_patches si diagnostics_mysql_151 (din externals)
 		2. copiere prin scp pe linux (node1932 172.18.49.25) locatia /nicm/
 		// pasi din masina de linux

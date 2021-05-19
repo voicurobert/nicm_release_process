@@ -3,6 +3,7 @@ package process
 import (
 	"fmt"
 	"github.com/voicurobert/nicm_release_process/automator/commands"
+	"github.com/voicurobert/nicm_release_process/automator/options"
 	"github.com/voicurobert/nicm_release_process/automator/release_process/client"
 	"github.com/voicurobert/nicm_release_process/automator/release_process/server"
 )
@@ -10,17 +11,16 @@ import (
 const (
 	HelpCommandText        = "help"
 	ExitCommandText        = "exit"
-	NICMProcess            = "NICM Process"
-	PrepareReleaseProcess  = "prepare release"
-	ClientReleaseProcess   = "client release"
-	ServerReleaseProcess   = "server release"
-	ActivateReleaseProcess = "activate release"
-	NIGReleaseProcess      = "nig release"
-	GearsReleaseProcess    = "gears release"
+	NICMProcess            = "nicm_process"
+	PrepareReleaseProcess  = "prepare_release"
+	ClientReleaseProcess   = "client_release"
+	ServerReleaseProcess   = "server_release"
+	ActivateReleaseProcess = "activate_release"
+	NIGReleaseProcess      = "nig_release"
+	GearsReleaseProcess    = "gears_release"
 	PreviousProcess        = "back"
 	ExecuteProcess         = "execute"
-	PrintCommands          = "print commands"
-	PrintOptions           = "print options"
+	PrintCommands          = "print_commands"
 )
 
 var (
@@ -43,6 +43,8 @@ type UserProcessInterface interface {
 	PrintPossibleProcesses()
 	PrintCommands()
 	PrintOptions()
+	getInternalProcess() commands.ReleaseProcessInterface
+	options.SetOptionsInterface
 }
 
 func init() {
@@ -75,15 +77,63 @@ func initClientReleaseProcess(releaseProcess UserProcessInterface) {
 	executeClientProcess := userProcess{Name: ExecuteProcess}
 	clientReleaseProcess.setNextProcess(ExecuteProcess, &executeClientProcess)
 	clientReleaseProcess.setNextProcess(HelpCommandText, Process)
+	clientReleaseProcess.setNextProcess(PrintCommands, Process)
+	initOptionsProcess(&clientReleaseProcess)
 	clientReleaseProcess.setNextProcess(ExitCommandText, Process)
+}
+
+func initOptionsProcess(process UserProcessInterface) {
+	process.setNextProcess(options.PrintOptions, Process)
+	setOptionsProcess := userProcess{Name: options.SetOptions}
+	process.setNextProcess(options.SetOptions, &setOptionsProcess)
+	setOptionsProcess.setNextProcess(PreviousProcess, process)
+	setOptionsProcess.setNextProcess(HelpCommandText, process)
+	setOptionsProcess.setNextProcess(ExitCommandText, process)
+
+	initSetOptionsProcess(&setOptionsProcess)
+}
+
+func initSetOptionsProcess(optionsProcess UserProcessInterface) {
+	setWorkingPathProcess := userProcess{Name: options.SetWorkingPath}
+	optionsProcess.setNextProcess(options.SetWorkingPath, &setWorkingPathProcess)
+	setWorkingPathProcess.setNextProcess(PreviousProcess, optionsProcess)
+	setWorkingPathProcess.setNextProcess(HelpCommandText, optionsProcess)
+
+	setGitPathProcess := userProcess{Name: options.SetGitPath}
+	optionsProcess.setNextProcess(options.SetGitPath, &setGitPathProcess)
+	setGitPathProcess.setNextProcess(PreviousProcess, optionsProcess)
+	setGitPathProcess.setNextProcess(HelpCommandText, optionsProcess)
+
+	setBuildPathProcess := userProcess{Name: options.SetBuildPath}
+	optionsProcess.setNextProcess(options.SetBuildPath, &setBuildPathProcess)
+	setBuildPathProcess.setNextProcess(PreviousProcess, optionsProcess)
+	setBuildPathProcess.setNextProcess(HelpCommandText, optionsProcess)
+
+	setAntCommandProcess := userProcess{Name: options.SetAntCommand}
+	optionsProcess.setNextProcess(options.SetAntCommand, &setAntCommandProcess)
+	setAntCommandProcess.setNextProcess(PreviousProcess, optionsProcess)
+	setAntCommandProcess.setNextProcess(HelpCommandText, optionsProcess)
+
+	setImagesCommandProcess := userProcess{Name: options.SetImagesPath}
+	optionsProcess.setNextProcess(options.SetImagesPath, &setImagesCommandProcess)
+	setImagesCommandProcess.setNextProcess(PreviousProcess, optionsProcess)
+	setImagesCommandProcess.setNextProcess(HelpCommandText, optionsProcess)
 }
 
 func initServerReleaseProcess(releaseProcess UserProcessInterface) {
 	serverReleaseProcess := userProcess{Name: ServerReleaseProcess, internalProcess: server.ReleaseProcess}
+
 	releaseProcess.setNextProcess(ServerReleaseProcess, &serverReleaseProcess)
+
+	serverReleaseProcess.internalProcess.Init()
+
 	serverReleaseProcess.setNextProcess(PreviousProcess, releaseProcess)
 	executeServerProcess := userProcess{Name: ExecuteProcess}
 	serverReleaseProcess.setNextProcess(ExecuteProcess, &executeServerProcess)
+	serverReleaseProcess.setNextProcess(HelpCommandText, Process)
+	serverReleaseProcess.setNextProcess(PrintCommands, Process)
+	serverReleaseProcess.setNextProcess(options.PrintOptions, Process)
+	serverReleaseProcess.setNextProcess(ExitCommandText, Process)
 }
 
 func initActivateReleaseProcess() {
@@ -156,5 +206,45 @@ func (up *userProcess) PrintCommands() {
 func (up *userProcess) PrintOptions() {
 	if up.internalProcess != nil {
 		up.internalProcess.PrintOptions()
+	}
+}
+
+func (up *userProcess) getInternalProcess() commands.ReleaseProcessInterface {
+	return up.internalProcess
+}
+
+func (up *userProcess) SetWorkingPath(path string) {
+	p := up.getReleaseProcessByName(ClientReleaseProcess)
+	p.SetWorkingPath(path)
+}
+
+func (up *userProcess) SetGitPath(path string) {
+	p := up.getReleaseProcessByName(ClientReleaseProcess)
+	p.SetGitPath(path)
+}
+
+func (up *userProcess) SetBuildPath(path string) {
+	p := up.getReleaseProcessByName(ClientReleaseProcess)
+	p.SetBuildPath(path)
+}
+
+func (up *userProcess) SetImagesPath(path string) {
+	p := up.getReleaseProcessByName(ClientReleaseProcess)
+	p.SetImagesPath(path)
+}
+
+func (up *userProcess) SetAntCommand(path string) {
+	p := up.getReleaseProcessByName(ClientReleaseProcess)
+	p.SetAntCommand(path)
+}
+
+func (up *userProcess) getReleaseProcessByName(name string) commands.ReleaseProcessInterface {
+	prevProcess := up.NextProcess(PreviousProcess)
+	for {
+		if prevProcess.GetName() == name {
+			return prevProcess.getInternalProcess()
+		} else {
+			prevProcess = prevProcess.NextProcess(PreviousProcess)
+		}
 	}
 }
