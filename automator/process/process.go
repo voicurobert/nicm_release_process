@@ -2,7 +2,6 @@ package process
 
 import (
 	"fmt"
-	"github.com/voicurobert/nicm_release_process/automator/commands"
 	"github.com/voicurobert/nicm_release_process/automator/options"
 	"github.com/voicurobert/nicm_release_process/automator/release_process/client"
 	"github.com/voicurobert/nicm_release_process/automator/release_process/server"
@@ -27,11 +26,19 @@ var (
 	Process UserProcessInterface
 )
 
+type ReleaseProcessInterface interface {
+	Execute() error
+	Init()
+	PrintCommands()
+	PrintOptions()
+	options.SetOptionsInterface
+}
+
 type userProcess struct {
 	Name            string
 	processes       []UserProcessInterface
 	nextUserProcess UserProcessInterface
-	internalProcess commands.ReleaseProcessInterface
+	internalProcess ReleaseProcessInterface
 }
 
 type UserProcessInterface interface {
@@ -43,7 +50,7 @@ type UserProcessInterface interface {
 	PrintPossibleProcesses()
 	PrintCommands()
 	PrintOptions()
-	getInternalProcess() commands.ReleaseProcessInterface
+	getInternalProcess() ReleaseProcessInterface
 	options.SetOptionsInterface
 }
 
@@ -61,9 +68,13 @@ func initPrepareReleaseProcess() {
 	initClientReleaseProcess(&prepareReleaseProcess)
 	initServerReleaseProcess(&prepareReleaseProcess)
 
-	prepareReleaseProcess.setNextProcess(PreviousProcess, Process)
-	prepareReleaseProcess.setNextProcess(HelpCommandText, Process)
-	prepareReleaseProcess.setNextProcess(ExitCommandText, Process)
+	initDefaultProcesses(&prepareReleaseProcess, Process)
+}
+
+func initDefaultProcesses(process, next UserProcessInterface) {
+	process.setNextProcess(PreviousProcess, next)
+	process.setNextProcess(HelpCommandText, next)
+	process.setNextProcess(ExitCommandText, next)
 }
 
 func initClientReleaseProcess(releaseProcess UserProcessInterface) {
@@ -73,51 +84,40 @@ func initClientReleaseProcess(releaseProcess UserProcessInterface) {
 
 	clientReleaseProcess.internalProcess.Init()
 
-	clientReleaseProcess.setNextProcess(PreviousProcess, releaseProcess)
 	executeClientProcess := userProcess{Name: ExecuteProcess}
 	clientReleaseProcess.setNextProcess(ExecuteProcess, &executeClientProcess)
-	clientReleaseProcess.setNextProcess(HelpCommandText, Process)
-	clientReleaseProcess.setNextProcess(PrintCommands, Process)
 	initOptionsProcess(&clientReleaseProcess)
-	clientReleaseProcess.setNextProcess(ExitCommandText, Process)
+	initDefaultProcesses(&clientReleaseProcess, releaseProcess)
 }
 
 func initOptionsProcess(process UserProcessInterface) {
 	process.setNextProcess(options.PrintOptions, Process)
 	setOptionsProcess := userProcess{Name: options.SetOptions}
 	process.setNextProcess(options.SetOptions, &setOptionsProcess)
-	setOptionsProcess.setNextProcess(PreviousProcess, process)
-	setOptionsProcess.setNextProcess(HelpCommandText, process)
-	setOptionsProcess.setNextProcess(ExitCommandText, process)
-
 	initSetOptionsProcess(&setOptionsProcess)
+	initDefaultProcesses(&setOptionsProcess, process)
 }
 
 func initSetOptionsProcess(optionsProcess UserProcessInterface) {
 	setWorkingPathProcess := userProcess{Name: options.SetWorkingPath}
 	optionsProcess.setNextProcess(options.SetWorkingPath, &setWorkingPathProcess)
-	setWorkingPathProcess.setNextProcess(PreviousProcess, optionsProcess)
-	setWorkingPathProcess.setNextProcess(HelpCommandText, optionsProcess)
+	initDefaultProcesses(&setWorkingPathProcess, optionsProcess)
 
 	setGitPathProcess := userProcess{Name: options.SetGitPath}
 	optionsProcess.setNextProcess(options.SetGitPath, &setGitPathProcess)
-	setGitPathProcess.setNextProcess(PreviousProcess, optionsProcess)
-	setGitPathProcess.setNextProcess(HelpCommandText, optionsProcess)
+	initDefaultProcesses(&setGitPathProcess, optionsProcess)
 
 	setBuildPathProcess := userProcess{Name: options.SetBuildPath}
 	optionsProcess.setNextProcess(options.SetBuildPath, &setBuildPathProcess)
-	setBuildPathProcess.setNextProcess(PreviousProcess, optionsProcess)
-	setBuildPathProcess.setNextProcess(HelpCommandText, optionsProcess)
+	initDefaultProcesses(&setBuildPathProcess, optionsProcess)
 
 	setAntCommandProcess := userProcess{Name: options.SetAntCommand}
 	optionsProcess.setNextProcess(options.SetAntCommand, &setAntCommandProcess)
-	setAntCommandProcess.setNextProcess(PreviousProcess, optionsProcess)
-	setAntCommandProcess.setNextProcess(HelpCommandText, optionsProcess)
+	initDefaultProcesses(&setAntCommandProcess, optionsProcess)
 
 	setImagesCommandProcess := userProcess{Name: options.SetImagesPath}
 	optionsProcess.setNextProcess(options.SetImagesPath, &setImagesCommandProcess)
-	setImagesCommandProcess.setNextProcess(PreviousProcess, optionsProcess)
-	setImagesCommandProcess.setNextProcess(HelpCommandText, optionsProcess)
+	initDefaultProcesses(&setImagesCommandProcess, optionsProcess)
 }
 
 func initServerReleaseProcess(releaseProcess UserProcessInterface) {
@@ -127,13 +127,10 @@ func initServerReleaseProcess(releaseProcess UserProcessInterface) {
 
 	serverReleaseProcess.internalProcess.Init()
 
-	serverReleaseProcess.setNextProcess(PreviousProcess, releaseProcess)
 	executeServerProcess := userProcess{Name: ExecuteProcess}
 	serverReleaseProcess.setNextProcess(ExecuteProcess, &executeServerProcess)
-	serverReleaseProcess.setNextProcess(HelpCommandText, Process)
-	serverReleaseProcess.setNextProcess(PrintCommands, Process)
-	serverReleaseProcess.setNextProcess(options.PrintOptions, Process)
-	serverReleaseProcess.setNextProcess(ExitCommandText, Process)
+	serverReleaseProcess.setNextProcess(options.PrintOptions, releaseProcess)
+	initDefaultProcesses(&serverReleaseProcess, releaseProcess)
 }
 
 func initActivateReleaseProcess() {
@@ -209,7 +206,7 @@ func (up *userProcess) PrintOptions() {
 	}
 }
 
-func (up *userProcess) getInternalProcess() commands.ReleaseProcessInterface {
+func (up *userProcess) getInternalProcess() ReleaseProcessInterface {
 	return up.internalProcess
 }
 
@@ -238,7 +235,7 @@ func (up *userProcess) SetAntCommand(path string) {
 	p.SetAntCommand(path)
 }
 
-func (up *userProcess) getReleaseProcessByName(name string) commands.ReleaseProcessInterface {
+func (up *userProcess) getReleaseProcessByName(name string) ReleaseProcessInterface {
 	prevProcess := up.NextProcess(PreviousProcess)
 	for {
 		if prevProcess.GetName() == name {

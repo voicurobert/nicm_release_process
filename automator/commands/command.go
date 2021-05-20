@@ -2,17 +2,8 @@ package commands
 
 import (
 	"fmt"
-	"github.com/voicurobert/nicm_release_process/automator/options"
 	"strings"
 )
-
-type ReleaseProcessInterface interface {
-	Execute() error
-	Init()
-	PrintCommands()
-	PrintOptions()
-	options.SetOptionsInterface
-}
 
 type CommandInterface interface {
 	Execute() error

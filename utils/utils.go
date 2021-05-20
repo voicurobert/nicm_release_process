@@ -61,7 +61,6 @@ func BuildImages(args ...interface{}) error {
 
 func SetTaskStatus(args ...interface{}) error {
 	params := []string{"/C", "C:\\sw\\scripts\\run_ps.bat", args[0].(string)}
-	fmt.Println(params)
 	return executeCommand("cmd.exe", params...)
 }
 
@@ -131,9 +130,19 @@ func CreateArchive(args ...interface{}) error {
 		fmt.Println(err.Error())
 		return err
 	}
-	defer outFile.Close()
+	defer func(outFile *os.File) {
+		err := outFile.Close()
+		if err != nil {
+			fmt.Println("error when trying to close out file")
+		}
+	}(outFile)
 	archive := zip.NewWriter(outFile)
-	defer archive.Close()
+	defer func(archive *zip.Writer) {
+		err := archive.Close()
+		if err != nil {
+			fmt.Println("error when trying to close archiver")
+		}
+	}(archive)
 
 	for _, path := range dirsToArchive {
 		addFiles(archive, path, dirsToSkip)
@@ -183,7 +192,12 @@ func addFiles(w *zip.Writer, rootDir string, dirsToSkip []string) {
 		if err != nil {
 			return err
 		}
-		defer file.Close()
+		defer func(file *os.File) {
+			err := file.Close()
+			if err != nil {
+				fmt.Println("error when trying to close file")
+			}
+		}(file)
 		_, err = io.Copy(writer, file)
 		return err
 	})
