@@ -27,8 +27,7 @@ func StartApplication() {
 			continue
 		}
 		if text == process.ExitCommandText {
-			handleHelpCommand()
-			continue
+			os.Exit(1)
 		}
 		if strings.Contains(text, "release") || strings.Contains(text, "set") {
 			handleNewCommand(text)
@@ -40,6 +39,7 @@ func StartApplication() {
 		}
 		if text == process.ExecuteProcess {
 			handleExecuteCommand()
+			continue
 		}
 		if text == process.PrintCommands {
 			startProcess.PrintCommands()
@@ -76,8 +76,10 @@ func handlePreviousCommand(text string) {
 }
 
 func handleExecuteCommand() {
-	startProcess = startProcess.Execute()
-	addHistory(startProcess.GetName())
+	ok := startProcess.Execute()
+	if ok == true {
+		handlePreviousCommand(process.PreviousProcess)
+	}
 }
 
 func handleHelpCommand() {

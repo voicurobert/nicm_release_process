@@ -31,6 +31,7 @@ func (command *Command) Execute() error {
 		err := command.Function(command.Params...)
 		if err != nil {
 			fmt.Printf("error when executing command: %s\n", err.Error())
+			return nil
 		}
 		fmt.Println("success!")
 		fmt.Println(strings.Repeat("-", 50))

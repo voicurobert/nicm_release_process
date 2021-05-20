@@ -36,7 +36,7 @@ type userProcess struct {
 
 type UserProcessInterface interface {
 	NextProcess(string) UserProcessInterface
-	Execute() UserProcessInterface
+	Execute() bool
 	setNextProcess(command string, nextProcess UserProcessInterface)
 	GetName() string
 	getNextProcess() UserProcessInterface
@@ -178,15 +178,15 @@ func (up *userProcess) NextProcess(cmd string) UserProcessInterface {
 	return up
 }
 
-func (up *userProcess) Execute() UserProcessInterface {
+func (up *userProcess) Execute() bool {
 	if up.internalProcess == nil {
-		return up.NextProcess(PreviousProcess)
+		return false
 	}
 	if err := up.internalProcess.Execute(); err != nil {
 		fmt.Printf("error executing process %s:", err.Error())
 		panic(err)
 	}
-	return up.NextProcess(PreviousProcess)
+	return true
 }
 
 func (up *userProcess) GetName() string {

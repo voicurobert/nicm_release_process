@@ -14,7 +14,7 @@ type clientReleaseProcess struct {
 const (
 	workingPath = "C:\\sw\\nicm\\"
 	gitPath     = "nicm_master\\"
-	buildPath   = "run\\nicm430"
+	buildPath   = "run\\nicm430\\"
 	antCommand  = "build"
 	imagesPath  = "images\\main"
 )
@@ -48,11 +48,16 @@ func (c *clientReleaseProcess) initOptions() {
 }
 
 func (c *clientReleaseProcess) initCommands() {
-	c.commands = append(c.commands, commands.NewCommand("delete magikc files", utils.DeleteFiles, c.Options.GetGitPath()))
-	c.commands = append(c.commands, commands.NewCommand("execute git pull", utils.ExecuteGitPull, c.Options.GetGitPath()))
-	c.commands = append(c.commands, commands.NewCommand("build images", utils.BuildImages, c.Options.GetBuildPath(), c.Options.AntCommand))
-	c.commands = append(c.commands, commands.NewCommand("set writable access", utils.SetWritableAccess, c.Options.GetImagesPath(), "nicm_open", "nicm_closed"))
-	c.commands = append(c.commands, commands.NewCommand("creating archive", utils.CreateArchive, c.Options.WorkingPath, "nicm_products.zip", "nicm_master\\nicm_products\\", "externals\\diagnostics_mysql_151"))
+	//c.commands = append(c.commands, commands.NewCommand("delete magikc files", utils.DeleteFiles, c.Options.GetGitPath()))
+	//c.commands = append(c.commands, commands.NewCommand("execute git pull", utils.ExecuteGitPull, c.Options.GetGitPath()))
+	//c.commands = append(c.commands, commands.NewCommand("build images", utils.BuildImages, c.Options.GetBuildPath()))
+	//c.commands = append(c.commands, commands.NewCommand("set writable access", utils.SetWritableAccess, c.Options.GetImagesPath(), "nicm_open", "nicm_closed"))
+	//c.commands = append(c.commands, commands.NewCommand(
+	//	"creating archive",
+	//	utils.CreateArchive,
+	//	c.Options.WorkingPath, "nicm_products_client.zip", []string{"nicm_master\\nicm_products\\"}))
+	//c.commands = append(c.commands, commands.NewCommand("disable Task", utils.ExecutePowerShell, "Disable-ScheduledTask -TaskPath \"\\NICM\\\" -TaskName \"Test\"", "-verb RunAs"))
+	c.commands = append(c.commands, commands.NewCommand("disable Task", utils.SetTaskStatus, "false"))
 }
 
 func (c *clientReleaseProcess) PrintCommands() {

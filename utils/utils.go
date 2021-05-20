@@ -2,12 +2,12 @@ package utils
 
 import (
 	"archive/zip"
+	"bufio"
 	"fmt"
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing/transport/http"
 	"io"
 	"io/fs"
-	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -16,7 +16,7 @@ import (
 
 func DeleteFiles(args ...interface{}) error {
 	return filepath.Walk(args[0].(string), func(path string, info fs.FileInfo, err error) error {
-		if !info.IsDir() && strings.Contains(path, ".magikc") {
+		if !info.IsDir() && strings.Contains(path, ".magik") {
 			return os.Remove(path)
 		}
 		return nil
@@ -33,7 +33,8 @@ func ExecuteGitPull(args ...interface{}) error {
 		return err
 	}
 	err = wt.Pull(&git.PullOptions{
-		RemoteName: "origin",
+		RemoteName:    "origin",
+		ReferenceName: "refs/heads/master",
 		Auth: &http.BasicAuth{
 			Username: "ds.nicm",
 			Password: "aergistal",
@@ -50,29 +51,50 @@ func ExecuteGitPull(args ...interface{}) error {
 }
 
 func BuildImages(args ...interface{}) error {
-	wk, err := os.Getwd()
+	path := args[0].(string)
+	err := os.Chdir(path)
 	if err != nil {
 		return err
 	}
-	err = os.Chdir(args[0].(string))
+	return executeCommand("cmd.exe", "/C", path+"build_all.bat")
+}
+
+func SetTaskStatus(args ...interface{}) error {
+	params := []string{"/C", "C:\\sw\\scripts\\run_ps.bat", args[0].(string)}
+	fmt.Println(params)
+	return executeCommand("cmd.exe", params...)
+}
+
+func executeCommand(command string, args ...string) error {
+	cmd := exec.Command(command, args...)
+	cmdReader, err := cmd.StdoutPipe()
 	if err != nil {
+		_, err2 := fmt.Fprintln(os.Stderr, "Error creating StdoutPipe for Cmd", err)
+		if err2 != nil {
+			return err2
+		}
 		return err
 	}
-	cmd := exec.Command("cmd.exe", "/C", "ant", args[1].(string))
-	//cmd.Env = os.Environ()
-	//cmd.Env = append(cmd.Env, "MY_VAR=some_value")
-	bytes, err := cmd.CombinedOutput()
+	scanner := bufio.NewScanner(cmdReader)
+	go func() {
+		for scanner.Scan() {
+			fmt.Printf("\t > %s\n", scanner.Text())
+		}
+	}()
+	err = cmd.Start()
 	if err != nil {
-		fmt.Println(err.Error())
-		log.Print(string(bytes))
-		fmt.Println(string(bytes))
+		_, err2 := fmt.Fprintln(os.Stderr, "Error starting Cmd", err)
+		if err2 != nil {
+			return err2
+		}
 		return err
 	}
-	log.Print(string(bytes))
-	fmt.Println(string(bytes))
-	err = os.Chdir(wk)
+	err = cmd.Wait()
 	if err != nil {
-		fmt.Println(err.Error())
+		_, err2 := fmt.Fprintln(os.Stderr, "Error waiting for Cmd", err)
+		if err2 != nil {
+			return err2
+		}
 		return err
 	}
 	return nil
@@ -97,6 +119,8 @@ func SetWritableAccess(args ...interface{}) error {
 func CreateArchive(args ...interface{}) error {
 	path := args[0].(string)
 	outName := args[1].(string)
+	dirsToArchive := args[2].([]string)
+	dirsToSkip := args[3].([]string)
 	err := os.Chdir(path)
 	if err != nil {
 		fmt.Printf("error changing dir %s: \n", err)
@@ -111,13 +135,13 @@ func CreateArchive(args ...interface{}) error {
 	archive := zip.NewWriter(outFile)
 	defer archive.Close()
 
-	for _, path := range args[2:] {
-		addFiles(archive, path.(string))
+	for _, path := range dirsToArchive {
+		addFiles(archive, path, dirsToSkip)
 	}
 	return nil
 }
 
-func addFiles(w *zip.Writer, rootDir string) {
+func addFiles(w *zip.Writer, rootDir string, dirsToSkip []string) {
 	info, err := os.Stat(rootDir)
 	if err != nil {
 		fmt.Println(err.Error())
@@ -141,6 +165,9 @@ func addFiles(w *zip.Writer, rootDir string) {
 			header.Name = filepath.Join(baseDir, strings.TrimPrefix(path, rootDir))
 		}
 		if info.IsDir() {
+			if isSkippedDir(info.Name(), dirsToSkip) {
+				return nil
+			}
 			header.Name += "/"
 		} else {
 			header.Method = zip.Deflate
@@ -163,4 +190,16 @@ func addFiles(w *zip.Writer, rootDir string) {
 	if err != nil {
 		fmt.Println(err.Error())
 	}
+}
+
+func isSkippedDir(dirName string, dirsToSkip []string) bool {
+	if len(dirsToSkip) == 0 {
+		return false
+	}
+	for _, dir := range dirsToSkip {
+		if dirName == dir {
+			return true
+		}
+	}
+	return false
 }

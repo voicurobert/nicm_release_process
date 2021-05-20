@@ -73,6 +73,13 @@ func (o *Options) GetImagesPath() string {
 	return sb.String()
 }
 
+func (o *Options) GetBuildEnvPath() string {
+	var sb strings.Builder
+	sb.WriteString(o.GetGitPath())
+	sb.WriteString("nicm_products\\nicm_build\\")
+	return sb.String()
+}
+
 func (o *Options) Print() {
 	attrs := reflect.ValueOf(o).Elem()
 	for i := 0; i < attrs.NumField(); i++ {
