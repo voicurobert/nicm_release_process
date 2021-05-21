@@ -3,7 +3,7 @@ package client
 import (
 	"github.com/voicurobert/nicm_release_process/automator/process/commands"
 	"github.com/voicurobert/nicm_release_process/automator/process/options"
-	"github.com/voicurobert/nicm_release_process/utils"
+	"github.com/voicurobert/nicm_release_process/automator/utils"
 )
 
 type clientReleaseProcess struct {
@@ -12,8 +12,10 @@ type clientReleaseProcess struct {
 }
 
 const (
-	workingPath = "C:\\NIG\\"
-	archiveName = "nicm_products_client.zip"
+	workingPath     = "C:\\NIG\\"
+	archiveName     = "nicm_products_client.zip"
+	magikcExtension = ".magikc"
+	magikExtension  = ".magik"
 )
 
 var (
@@ -50,9 +52,10 @@ func getImageNames() []string {
 func (c *clientReleaseProcess) initCommands() {
 	c.commands = []commands.CommandInterface{
 		commands.NewCommand("execute git pull", utils.ExecuteGitPull, c.Options.GetGitPath()),
-		commands.NewCommand("delete magikc files", utils.DeleteFiles, c.Options.GetGitPath()),
+		commands.NewCommand("delete magikc files", utils.DeleteFiles, c.Options.GetGitPath(), magikcExtension),
 		commands.NewCommand("build images", utils.BuildImages, c.Options.GetBuildPath()),
 		commands.NewCommand("set writable access", utils.SetWritableAccess, c.Options.GetImagesPath(), getImageNames()),
+		commands.NewCommand("delete magik files", utils.DeleteFiles, c.Options.GetGitPath(), magikExtension),
 		commands.NewCommand("creating archive", utils.CreateArchive, c.Options.WorkingPath, archiveName, getDirsToArchive()),
 	}
 }

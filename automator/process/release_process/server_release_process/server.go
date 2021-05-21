@@ -3,12 +3,13 @@ package server
 import (
 	"github.com/voicurobert/nicm_release_process/automator/process/commands"
 	"github.com/voicurobert/nicm_release_process/automator/process/options"
-	"github.com/voicurobert/nicm_release_process/utils"
+	"github.com/voicurobert/nicm_release_process/automator/utils"
 )
 
 const (
-	workingPath = "C:\\NIG\\"
-	archiveName = "nicm_products_server.zip"
+	workingPath     = "C:\\NIG\\"
+	archiveName     = "nicm_products_server.zip"
+	magikcExtension = ".magikc"
 )
 
 type serverReleaseProcess struct {
@@ -54,7 +55,7 @@ func getImageNames() []string {
 
 func (s *serverReleaseProcess) initCommands() {
 	s.commands = []commands.CommandInterface{
-		commands.NewCommand("delete magikc files", utils.DeleteFiles, s.Options.GetGitPath()),
+		commands.NewCommand("delete magikc files", utils.DeleteFiles, s.Options.GetGitPath(), magikcExtension),
 		commands.NewCommand("execute git pull", utils.ExecuteGitPull, s.Options.GetGitPath()),
 		commands.NewCommand("build images", utils.BuildImages, s.Options.GetBuildPath(), s.Options.AntCommand),
 		commands.NewCommand("set writable access", utils.SetWritableAccess, s.Options.GetImagesPath(), getImageNames()),

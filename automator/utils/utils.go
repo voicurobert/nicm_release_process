@@ -20,6 +20,9 @@ func DeleteFiles(args ...interface{}) error {
 	fileExtension := args[1].(string)
 	return filepath.Walk(rootDir, func(path string, info fs.FileInfo, err error) error {
 		if !info.IsDir() {
+			if strings.Contains(path, "release_patches") {
+				return nil
+			}
 			ok, _ := regexp.MatchString(fileExtension, info.Name())
 			if ok {
 				err := os.Remove(path)

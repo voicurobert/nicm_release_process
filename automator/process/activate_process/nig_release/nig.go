@@ -3,14 +3,16 @@ package nig
 import (
 	"github.com/voicurobert/nicm_release_process/automator/process/commands"
 	"github.com/voicurobert/nicm_release_process/automator/process/options"
-	"github.com/voicurobert/nicm_release_process/utils"
+	"github.com/voicurobert/nicm_release_process/automator/utils"
 )
 
 const (
 	workingPath          = "C:\\NIG\\"
-	taskStatusScriptPath = "C:\\sw\\scripts\\run_ps.bat"
+	taskStatusScriptPath = "scripts\\run_ps.bat"
 	disableTask          = "false"
 	enableTask           = "true"
+
+	magikcExtension = ".magikc"
 )
 
 var (
@@ -45,7 +47,7 @@ func (n *nigRelease) initCommands() {
 	n.commands = []commands.CommandInterface{
 		commands.NewCommand("disable Scheduled Task", utils.SetTaskStatus, taskStatusScriptPath, disableTask),
 		commands.NewCommand("execute git pull", utils.ExecuteGitPull, n.Options.GetGitPath()),
-		commands.NewCommand("delete magikc files", utils.DeleteFiles, n.Options.GetGitPath()),
+		commands.NewCommand("delete magikc files", utils.DeleteFiles, n.Options.GetGitPath(), magikcExtension),
 		commands.NewCommand("build images", utils.BuildImages, n.Options.GetBuildPath()),
 		commands.NewCommand("disable Scheduled Task", utils.SetTaskStatus, taskStatusScriptPath, enableTask),
 	}

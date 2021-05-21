@@ -3,7 +3,7 @@ package gears
 import (
 	"github.com/voicurobert/nicm_release_process/automator/process/commands"
 	"github.com/voicurobert/nicm_release_process/automator/process/options"
-	"github.com/voicurobert/nicm_release_process/utils"
+	"github.com/voicurobert/nicm_release_process/automator/utils"
 )
 
 const (

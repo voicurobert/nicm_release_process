@@ -3,7 +3,7 @@ package local
 import (
 	"github.com/voicurobert/nicm_release_process/automator/process/commands"
 	"github.com/voicurobert/nicm_release_process/automator/process/options"
-	"github.com/voicurobert/nicm_release_process/utils"
+	"github.com/voicurobert/nicm_release_process/automator/utils"
 )
 
 type localReleaseProcess struct {
@@ -14,10 +14,11 @@ type localReleaseProcess struct {
 const (
 	workingPath          = "C:\\sw\\nicm\\"
 	archiveName          = "nicm_products_client.zip"
-	fileExtension        = "magikc"
-	taskStatusScriptPath = "C:\\sw\\scripts\\run_ps.bat"
-	disableTask          = "false"
-	enableTask           = "true"
+	magikcExtension      = ".magikc"
+	magikExtension       = ".magik"
+	taskStatusScriptPath = "scripts\\run_ps.bat"
+	disableTask          = "true"
+	enableTask           = "false"
 )
 
 var (
@@ -61,14 +62,15 @@ func getImageNames() []string {
 
 func (l *localReleaseProcess) initCommands() {
 	l.commands = []commands.CommandInterface{
-		commands.NewCommand("disable Scheduled Task", utils.SetTaskStatus, taskStatusScriptPath, disableTask),
+		commands.NewCommand("disable Scheduled Task", utils.SetTaskStatus, workingPath+taskStatusScriptPath, disableTask),
 		commands.NewCommand("execute git pull", utils.ExecuteGitPull, l.Options.GetGitPath()),
-		commands.NewCommand("delete magikc files", utils.DeleteFiles, l.Options.GetGitPath(), fileExtension),
+		commands.NewCommand("delete magikc files", utils.DeleteFiles, l.Options.GetGitPath(), magikcExtension),
 		commands.NewCommand("build images", utils.BuildImages, l.Options.GetBuildPath()),
 		commands.NewCommand("set writable access", utils.SetWritableAccess, l.Options.GetImagesPath(), getImageNames()),
+		commands.NewCommand("delete magikc files", utils.DeleteFiles, l.Options.GetGitPath(), magikExtension),
 		commands.NewCommand("creating client archive", utils.CreateArchive, l.Options.WorkingPath, archiveName, getClientDirsToArchive()),
 		commands.NewCommand("creating server archive", utils.CreateArchive, l.Options.WorkingPath, archiveName, getServerDirsToArchive(), getDirsToSkipArchive()),
-		commands.NewCommand("disable Scheduled Task", utils.SetTaskStatus, taskStatusScriptPath, enableTask),
+		commands.NewCommand("disable Scheduled Task", utils.SetTaskStatus, workingPath+taskStatusScriptPath, enableTask),
 	}
 }
 
