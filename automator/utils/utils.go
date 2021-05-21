@@ -115,7 +115,7 @@ func executeCommand(command string, args ...string) error {
 
 func SetWritableAccess(args ...interface{}) error {
 	fullPath := args[0].(string)
-	imageNames := args[2].([]string)
+	imageNames := args[1].([]string)
 	return filepath.Walk(fullPath, func(path string, info fs.FileInfo, err error) error {
 		if !info.IsDir() {
 			for _, imageName := range imageNames {
