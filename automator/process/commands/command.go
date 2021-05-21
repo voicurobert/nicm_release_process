@@ -18,20 +18,20 @@ type Command struct {
 
 func (command *Command) Execute() error {
 	if command.Function != nil {
-		fmt.Printf("executing command: %s\n", command.Name)
+		fmt.Printf("executing command -> %s\n", command.Name)
 		err := command.Function(command.Params...)
 		if err != nil {
 			fmt.Printf("error when executing command: %s\n", err.Error())
 			return nil
 		}
 		fmt.Println("success!")
-		fmt.Println(strings.Repeat("-", 50))
+		fmt.Println(strings.Repeat("-#", 100))
 	}
 	return nil
 }
 
 func (command *Command) Print() {
-	fmt.Printf("\t %s-> \n", command.Name)
+	fmt.Printf("\t <!%s!> \n", command.Name)
 }
 
 func (command *Command) SetParams(params ...interface{}) {

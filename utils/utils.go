@@ -11,20 +11,30 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"strings"
 )
 
 func DeleteFiles(args ...interface{}) error {
-	return filepath.Walk(args[0].(string), func(path string, info fs.FileInfo, err error) error {
-		if !info.IsDir() && strings.Contains(path, ".magik") {
-			return os.Remove(path)
+	rootDir := args[0].(string)
+	fileExtension := args[1].(string)
+	return filepath.Walk(rootDir, func(path string, info fs.FileInfo, err error) error {
+		if !info.IsDir() {
+			ok, _ := regexp.MatchString(fileExtension, info.Name())
+			if ok {
+				err := os.Remove(path)
+				if err != nil {
+					return err
+				}
+			}
 		}
 		return nil
 	})
 }
 
 func ExecuteGitPull(args ...interface{}) error {
-	repo, err := git.PlainOpen(args[0].(string))
+	rootDir := args[0].(string)
+	repo, err := git.PlainOpen(rootDir)
 	if err != nil {
 		return err
 	}
@@ -60,8 +70,9 @@ func BuildImages(args ...interface{}) error {
 }
 
 func SetTaskStatus(args ...interface{}) error {
-	params := []string{"/C", "C:\\sw\\scripts\\run_ps.bat", args[0].(string)}
-	return executeCommand("cmd.exe", params...)
+	scriptPath := args[0].(string)
+	disable := args[1].(string)
+	return executeCommand("cmd.exe", "/C", scriptPath, disable)
 }
 
 func executeCommand(command string, args ...string) error {
@@ -101,13 +112,16 @@ func executeCommand(command string, args ...string) error {
 
 func SetWritableAccess(args ...interface{}) error {
 	fullPath := args[0].(string)
+	imageNames := args[2].([]string)
 	return filepath.Walk(fullPath, func(path string, info fs.FileInfo, err error) error {
 		if !info.IsDir() {
-			if strings.Contains(path, args[1].(string)) || strings.Contains(path, args[2].(string)) {
-				err := os.Chmod(path, 0222)
-				if err != nil {
-					fmt.Printf("error setting writable access %s \n", err.Error())
-					return err
+			for _, imageName := range imageNames {
+				if strings.Contains(path, imageName) {
+					err := os.Chmod(path, 0222)
+					if err != nil {
+						fmt.Printf("error setting writable access %s \n", err.Error())
+						return err
+					}
 				}
 			}
 		}

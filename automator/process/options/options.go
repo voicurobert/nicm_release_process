@@ -14,6 +14,14 @@ const (
 	SetBuildPath   = "set_build_path"
 	SetAntCommand  = "set_ant_command"
 	SetImagesPath  = "set_images_path"
+
+	SetOptionSeparator = "="
+
+	gitPath      = "nicm_master\\"
+	buildPath    = "run\\nicm430\\"
+	antCommand   = "build"
+	imagesPath   = "images\\"
+	buildEnvPath = "nicm_products\\nicm_build\\"
 )
 
 type SetOptionsInterface interface {
@@ -30,6 +38,16 @@ type Options struct {
 	BuildPath   string
 	AntCommand  string
 	ImagesPath  string
+}
+
+func New(workingPath string) *Options {
+	return &Options{
+		WorkingPath: workingPath,
+		GitPath:     gitPath,
+		BuildPath:   buildPath,
+		AntCommand:  antCommand,
+		ImagesPath:  imagesPath,
+	}
 }
 
 func (o *Options) SetWorkingPath(path string) {
@@ -76,7 +94,7 @@ func (o *Options) GetImagesPath() string {
 func (o *Options) GetBuildEnvPath() string {
 	var sb strings.Builder
 	sb.WriteString(o.GetGitPath())
-	sb.WriteString("nicm_products\\nicm_build\\")
+	sb.WriteString(buildEnvPath)
 	return sb.String()
 }
 
