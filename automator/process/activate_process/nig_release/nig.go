@@ -7,10 +7,9 @@ import (
 )
 
 const (
-	workingPath          = "C:\\NIG\\"
-	taskStatusScriptPath = "scripts\\run_ps.bat"
-	disableTask          = "false"
-	enableTask           = "true"
+	workingPath = "C:\\NIG\\"
+	disableTask = "false"
+	enableTask  = "true"
 
 	magikcExtension = ".magikc"
 )
@@ -45,11 +44,11 @@ func (n *nigRelease) initOptions() {
 
 func (n *nigRelease) initCommands() {
 	n.commands = []commands.CommandInterface{
-		commands.NewCommand("disable Scheduled Task", utils.SetTaskStatus, taskStatusScriptPath, disableTask),
+		commands.NewCommand("disable Scheduled Task", utils.ExecutePowerShell, disableTask),
 		commands.NewCommand("execute git pull", utils.ExecuteGitPull, n.Options.GetGitPath()),
 		commands.NewCommand("delete magikc files", utils.DeleteFiles, n.Options.GetGitPath(), magikcExtension),
 		commands.NewCommand("build images", utils.BuildImages, n.Options.GetBuildPath()),
-		commands.NewCommand("disable Scheduled Task", utils.SetTaskStatus, taskStatusScriptPath, enableTask),
+		commands.NewCommand("disable Scheduled Task", utils.ExecutePowerShell, enableTask),
 	}
 }
 

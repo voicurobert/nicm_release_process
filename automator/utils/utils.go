@@ -4,8 +4,6 @@ import (
 	"archive/zip"
 	"bufio"
 	"fmt"
-	"github.com/go-git/go-git/v5"
-	"github.com/go-git/go-git/v5/plumbing/transport/http"
 	"io"
 	"io/fs"
 	"os"
@@ -20,7 +18,7 @@ func DeleteFiles(args ...interface{}) error {
 	fileExtension := args[1].(string)
 	return filepath.Walk(rootDir, func(path string, info fs.FileInfo, err error) error {
 		if !info.IsDir() {
-			if strings.Contains(path, "release_patches") {
+			if strings.Contains(path, "release_patches") || strings.Contains(path, "dynamic_patches") {
 				return nil
 			}
 			ok, _ := regexp.MatchString(fileExtension, info.Name())
@@ -36,31 +34,12 @@ func DeleteFiles(args ...interface{}) error {
 }
 
 func ExecuteGitPull(args ...interface{}) error {
-	rootDir := args[0].(string)
-	repo, err := git.PlainOpen(rootDir)
+	path := args[0].(string)
+	err := os.Chdir(path)
 	if err != nil {
 		return err
 	}
-	wt, err := repo.Worktree()
-	if err != nil {
-		return err
-	}
-	err = wt.Pull(&git.PullOptions{
-		RemoteName:    "origin",
-		ReferenceName: "refs/heads/master",
-		Auth: &http.BasicAuth{
-			Username: "ds.nicm",
-			Password: "aergistal",
-		},
-		Progress: os.Stdout,
-	})
-	if err != nil {
-		if strings.Contains(err.Error(), "up-to-date") {
-			return nil
-		}
-		return err
-	}
-	return nil
+	return executeCommand("cmd.exe", "/C", "git pull")
 }
 
 func BuildImages(args ...interface{}) error {
@@ -72,10 +51,23 @@ func BuildImages(args ...interface{}) error {
 	return executeCommand("cmd.exe", "/C", path+"build_all.bat")
 }
 
-func SetTaskStatus(args ...interface{}) error {
-	scriptPath := args[0].(string)
-	disable := args[1].(string)
-	return executeCommand("cmd.exe", "/C", scriptPath, disable)
+func ExecutePowerShell(args ...interface{}) error {
+	disableTask := args[0].(string)
+
+	ps, err := exec.LookPath("powershell.exe")
+	if err != nil {
+		return err
+	}
+	disableTaskArgs := []string{"-NoProfile", "-NonInteractive"}
+	var taskCommand string
+	if disableTask == "true" {
+		taskCommand = "Disable-ScheduledTask"
+	} else {
+		taskCommand = "Enable-ScheduledTask"
+	}
+	disableTaskArgs = append(disableTaskArgs, taskCommand)
+	disableTaskArgs = append(disableTaskArgs, "-TaskPath", "\"\\NICM\\\"", "-TaskName", "\"Test\"")
+	return executeCommand(ps, disableTaskArgs...)
 }
 
 func executeCommand(command string, args ...string) error {
@@ -136,7 +128,11 @@ func CreateArchive(args ...interface{}) error {
 	path := args[0].(string)
 	outName := args[1].(string)
 	dirsToArchive := args[2].([]string)
-	dirsToSkip := args[3].([]string)
+	var dirsToSkip = make([]string, 0)
+	if len(args) > 3 {
+		dirsToSkip = args[3].([]string)
+	}
+
 	err := os.Chdir(path)
 	if err != nil {
 		fmt.Printf("error changing dir %s: \n", err)
@@ -192,7 +188,7 @@ func addFiles(w *zip.Writer, rootDir string, dirsToSkip []string) {
 		}
 		if info.IsDir() {
 			if isSkippedDir(info.Name(), dirsToSkip) {
-				return nil
+				return filepath.SkipDir
 			}
 			header.Name += "/"
 		} else {
@@ -228,7 +224,7 @@ func isSkippedDir(dirName string, dirsToSkip []string) bool {
 		return false
 	}
 	for _, dir := range dirsToSkip {
-		if dirName == dir {
+		if strings.Contains(dirName, dir) {
 			return true
 		}
 	}

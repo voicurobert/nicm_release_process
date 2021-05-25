@@ -50,7 +50,6 @@ func StartInteracting() {
 			continue
 		}
 		handleDefaultCommand(text)
-		continue
 	}
 }
 

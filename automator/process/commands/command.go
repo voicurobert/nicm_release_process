@@ -25,7 +25,7 @@ func (command *Command) Execute() error {
 			return nil
 		}
 		fmt.Println("success!")
-		fmt.Println(strings.Repeat("-#", 100))
+		fmt.Println(strings.Repeat("-#", 50))
 	}
 	return nil
 }
