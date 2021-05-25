@@ -51,13 +51,8 @@ func BuildImages(args ...interface{}) error {
 	return executeCommand("cmd.exe", "/C", path+"build_all.bat")
 }
 
-func ExecutePowerShell(args ...interface{}) error {
+func SetScheduledTaskStatus(args ...interface{}) error {
 	disableTask := args[0].(string)
-
-	ps, err := exec.LookPath("powershell.exe")
-	if err != nil {
-		return err
-	}
 	disableTaskArgs := []string{"-NoProfile", "-NonInteractive"}
 	var taskCommand string
 	if disableTask == "true" {
@@ -67,7 +62,20 @@ func ExecutePowerShell(args ...interface{}) error {
 	}
 	disableTaskArgs = append(disableTaskArgs, taskCommand)
 	disableTaskArgs = append(disableTaskArgs, "-TaskPath", "\"\\NICM\\\"", "-TaskName", "\"Test\"")
-	return executeCommand(ps, disableTaskArgs...)
+	return runPowerShellCommand(disableTaskArgs...)
+}
+
+func RunPowerShellScript(args ...interface{}) error {
+	path := args[0].(string)
+	return runPowerShellCommand([]string{path}...)
+}
+
+func runPowerShellCommand(args ...string) error {
+	ps, err := exec.LookPath("powershell.exe")
+	if err != nil {
+		return err
+	}
+	return executeCommand(ps, args...)
 }
 
 func executeCommand(command string, args ...string) error {
@@ -229,4 +237,12 @@ func isSkippedDir(dirName string, dirsToSkip []string) bool {
 		}
 	}
 	return false
+}
+
+func MoveArchive(args ...interface{}) error {
+	sourcePath := args[0].(string)
+	destPath := args[1].(string)
+	archiveName := args[2].(string)
+	cmdArgs := []string{"sshpass", "-p", "T#ink2!", "scp", "-r", sourcePath, "laur", "@", "172.16.10.207", ":", destPath + "//" + archiveName}
+	return executeCommand("sshpass", cmdArgs...)
 }

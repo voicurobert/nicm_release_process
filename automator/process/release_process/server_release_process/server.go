@@ -7,9 +7,10 @@ import (
 )
 
 const (
-	workingPath     = "C:\\NIG\\"
-	archiveName     = "nicm_products_server.zip"
-	magikcExtension = ".magikc"
+	workingPath       = "C:\\NIG\\"
+	archiveName       = "nicm_products_server.zip"
+	magikcExtension   = ".magikc"
+	serverArchivePath = ""
 )
 
 type serverReleaseProcess struct {
@@ -60,6 +61,7 @@ func (s *serverReleaseProcess) initCommands() {
 		commands.NewCommand("build images", utils.BuildImages, s.Options.GetBuildPath(), s.Options.AntCommand),
 		commands.NewCommand("set writable access", utils.SetWritableAccess, s.Options.GetImagesPath(), getImageNames()),
 		commands.NewCommand("creating archive", utils.CreateArchive, s.Options.WorkingPath, archiveName, getDirsToArchive(), getDirsToSkipArchive()),
+		commands.NewCommand("move archive to server", utils.MoveArchive, s.Options.WorkingPath, serverArchivePath, archiveName),
 	}
 }
 

@@ -11,7 +11,9 @@ const (
 	disableTask = "false"
 	enableTask  = "true"
 
-	magikcExtension = ".magikc"
+	magikcExtension             = ".magikc"
+	restartGSSAgentsScriptNameA = ""
+	restartGSSAgentsScriptNameB = ""
 )
 
 var (
@@ -44,11 +46,13 @@ func (n *nigRelease) initOptions() {
 
 func (n *nigRelease) initCommands() {
 	n.commands = []commands.CommandInterface{
-		commands.NewCommand("disable Scheduled Task", utils.ExecutePowerShell, disableTask),
+		commands.NewCommand("disable Scheduled Task", utils.SetScheduledTaskStatus, disableTask),
+		commands.NewCommand("restart GSS agents", utils.RunPowerShellScript, n.Options.GetBuildPath()+restartGSSAgentsScriptNameA),
 		commands.NewCommand("execute git pull", utils.ExecuteGitPull, n.Options.GetGitPath()),
 		commands.NewCommand("delete magikc files", utils.DeleteFiles, n.Options.GetGitPath(), magikcExtension),
 		commands.NewCommand("build images", utils.BuildImages, n.Options.GetBuildPath()),
-		commands.NewCommand("disable Scheduled Task", utils.ExecutePowerShell, enableTask),
+		commands.NewCommand("restart GSS agents", utils.RunPowerShellScript, n.Options.GetBuildPath()+restartGSSAgentsScriptNameA),
+		commands.NewCommand("disable Scheduled Task", utils.SetScheduledTaskStatus, enableTask),
 	}
 }
 
