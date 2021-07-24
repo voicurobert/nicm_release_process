@@ -9,7 +9,6 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"regexp"
 	"strings"
 )
 
@@ -18,11 +17,12 @@ func DeleteFiles(args ...interface{}) error {
 	fileExtension := args[1].(string)
 	return filepath.Walk(rootDir, func(path string, info fs.FileInfo, err error) error {
 		if !info.IsDir() {
-			if strings.Contains(path, "release_patches") || strings.Contains(path, "dynamic_patches") {
+			if strings.Contains(path, "release_patches") ||
+				strings.Contains(path, "dynamic_patches") ||
+				strings.Contains(path, "build_nicm_linux") {
 				return nil
 			}
-			ok, _ := regexp.MatchString(fileExtension, info.Name())
-			if ok {
+			if strings.HasSuffix(info.Name(), fileExtension) {
 				err := os.Remove(path)
 				if err != nil {
 					return err
@@ -79,6 +79,7 @@ func runPowerShellCommand(args ...string) error {
 }
 
 func executeCommand(command string, args ...string) error {
+	fmt.Println(args)
 	cmd := exec.Command(command, args...)
 	cmdReader, err := cmd.StdoutPipe()
 	if err != nil {
@@ -151,31 +152,25 @@ func CreateArchive(args ...interface{}) error {
 		fmt.Println(err.Error())
 		return err
 	}
-	defer func(outFile *os.File) {
-		err := outFile.Close()
-		if err != nil {
-			fmt.Println("error when trying to close out file")
-		}
-	}(outFile)
+	defer outFile.Close()
+
 	archive := zip.NewWriter(outFile)
-	defer func(archive *zip.Writer) {
-		err := archive.Close()
-		if err != nil {
-			fmt.Println("error when trying to close archiver")
-		}
-	}(archive)
+
+	defer archive.Close()
 
 	for _, path := range dirsToArchive {
-		addFiles(archive, path, dirsToSkip)
+		err := addFiles(archive, path, dirsToSkip)
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }
 
-func addFiles(w *zip.Writer, rootDir string, dirsToSkip []string) {
+func addFiles(w *zip.Writer, rootDir string, dirsToSkip []string) error {
 	info, err := os.Stat(rootDir)
 	if err != nil {
-		fmt.Println(err.Error())
-		return
+		return err
 	}
 
 	var baseDir string
@@ -213,18 +208,14 @@ func addFiles(w *zip.Writer, rootDir string, dirsToSkip []string) {
 		if err != nil {
 			return err
 		}
-		defer func(file *os.File) {
-			err := file.Close()
-			if err != nil {
-				fmt.Println("error when trying to close file")
-			}
-		}(file)
+		defer file.Close()
 		_, err = io.Copy(writer, file)
 		return err
 	})
 	if err != nil {
-		fmt.Println(err.Error())
+		return err
 	}
+	return nil
 }
 
 func isSkippedDir(dirName string, dirsToSkip []string) bool {
@@ -243,6 +234,9 @@ func MoveArchive(args ...interface{}) error {
 	sourcePath := args[0].(string)
 	destPath := args[1].(string)
 	archiveName := args[2].(string)
-	cmdArgs := []string{"sshpass", "-p", "T#ink2!", "scp", "-r", sourcePath, "laur", "@", "172.16.10.207", ":", destPath + "//" + archiveName}
-	return executeCommand("sshpass", cmdArgs...)
+	//cmdArgs := []string{"-p", "T#ink2!", "scp", "-r", sourcePath, "laur", "@", "172.16.10.207", ":", destPath + "//" + archiveName}
+	arg := fmt.Sprintf("-p %s %s %s@%s:%s", "T#ink2!", sourcePath+archiveName, "laur", "172.16.10.207", destPath+archiveName)
+	fmt.Println(arg)
+	cmdArgs := []string{arg}
+	return executeCommand("ssh", cmdArgs...)
 }

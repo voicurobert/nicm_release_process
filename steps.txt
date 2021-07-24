@@ -3,6 +3,7 @@
 Test app with administrator, and check powershell
 
 I. Prepare release
+
     A - NIG Client
         1. delete .magikc files
         2. git pull
@@ -10,6 +11,7 @@ I. Prepare release
         4. set all nicm_open, nicm_closed images (.msf, .mf) to write mode (remove readonly mode)
         5. remove .magik files
         6. create client archive from nicm_products
+        
     B - Server node1932 172.18.49.25, will connect with user and password
 	    1. Client steps from 1-4 are the same
 	    2. create archive from nicm_products but remove night_scripts and nig dirs and add dynamic_patches si diagnostics_mysql_151, from externals dir
@@ -28,7 +30,7 @@ I. Prepare release
 
 II. Activate release
 
-	A - NIG
+	A - NIG 
 	    1. deactivate scheduled task "GSS agent" from task scheduler
 	    2. run power shell NIG\nicm_master\run\nicm430\restart_gss_agents.ps1 - fara liniile 25, 26 TODO de facut un nou script
 	    3. git pull

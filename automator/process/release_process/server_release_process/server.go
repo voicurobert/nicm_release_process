@@ -7,10 +7,10 @@ import (
 )
 
 const (
-	workingPath       = "C:\\NIG\\"
+	workingPath       = "C:\\sw\\nicm\\"
 	archiveName       = "nicm_products_server.zip"
 	magikcExtension   = ".magikc"
-	serverArchivePath = ""
+	serverArchivePath = "/nicm/"
 )
 
 type serverReleaseProcess struct {
@@ -43,7 +43,7 @@ func (s *serverReleaseProcess) initOptions() {
 }
 
 func getDirsToArchive() []string {
-	return []string{"nicm_master\\nicm_products\\", "nicm_master\\dynamic_patches", "externals\\diagnostics_mysql_151"}
+	return []string{"nicm_master\\nicm_products\\", "nicm_master\\dynamic_patches\\", "externals\\diagnostics_mysql_151\\"}
 }
 
 func getDirsToSkipArchive() []string {
@@ -56,11 +56,11 @@ func getImageNames() []string {
 
 func (s *serverReleaseProcess) initCommands() {
 	s.commands = []commands.CommandInterface{
-		commands.NewCommand("delete magikc files", utils.DeleteFiles, s.Options.GetGitPath(), magikcExtension),
-		commands.NewCommand("execute git pull", utils.ExecuteGitPull, s.Options.GetGitPath()),
-		commands.NewCommand("build images", utils.BuildImages, s.Options.GetBuildPath(), s.Options.AntCommand),
-		commands.NewCommand("set writable access", utils.SetWritableAccess, s.Options.GetImagesPath(), getImageNames()),
-		commands.NewCommand("creating archive", utils.CreateArchive, s.Options.WorkingPath, archiveName, getDirsToArchive(), getDirsToSkipArchive()),
+		//commands.NewCommand("delete magikc files", utils.DeleteFiles, s.Options.GetGitPath(), magikcExtension),
+		//commands.NewCommand("execute git pull", utils.ExecuteGitPull, s.Options.GetGitPath()),
+		//commands.NewCommand("build images", utils.BuildImages, s.Options.GetBuildPath(), s.Options.AntCommand),
+		//commands.NewCommand("set writable access", utils.SetWritableAccess, s.Options.GetImagesPath(), getImageNames()),
+		//commands.NewCommand("creating archive", utils.CreateArchive, s.Options.WorkingPath, archiveName, getDirsToArchive(), getDirsToSkipArchive()),
 		commands.NewCommand("move archive to server", utils.MoveArchive, s.Options.WorkingPath, serverArchivePath, archiveName),
 	}
 }

@@ -12,7 +12,7 @@ type localReleaseProcess struct {
 }
 
 const (
-	workingPath       = "C:\\NIG\\"
+	workingPath       = "C:\\sw\\nicm\\"
 	clientArchiveName = "nicm_products_client.zip"
 	serverArchiveName = "nicm_products_server.zip"
 	magikcExtension   = ".magikc"
@@ -62,16 +62,15 @@ func getImageNames() []string {
 
 func (l *localReleaseProcess) initCommands() {
 	l.commands = []commands.CommandInterface{
-		commands.NewCommand("disable Scheduled Task", utils.SetScheduledTaskStatus, disableTask),
-		//commands.NewCommand("disable Scheduled Task", utils.SetTaskStatus, workingPath+taskStatusScriptPath, disableTask),
-		//commands.NewCommand("execute git pull", utils.ExecuteGitPull2, l.Options.GetGitPath()),
+		//commands.NewCommand("disable Scheduled Task", utils.SetScheduledTaskStatus, disableTask),
+		//commands.NewCommand("execute git pull", utils.ExecuteGitPull, l.Options.GetGitPath()),
 		//commands.NewCommand("delete magikc files", utils.DeleteFiles, l.Options.GetGitPath(), magikcExtension),
-		//commands.NewCommand("build images", utils.BuildImages, l.Options.GetBuildPath()),
+		commands.NewCommand("build images", utils.BuildImages, l.Options.GetBuildPath()),
 		//commands.NewCommand("set writable access", utils.SetWritableAccess, l.Options.GetImagesPath(), getImageNames()),
 		//commands.NewCommand("delete magik files", utils.DeleteFiles, l.Options.GetGitPath(), magikExtension),
 		//commands.NewCommand("creating client archive", utils.CreateArchive, l.Options.WorkingPath, clientArchiveName, getClientDirsToArchive()),
 		//commands.NewCommand("creating server archive", utils.CreateArchive, l.Options.WorkingPath, serverArchiveName, getServerDirsToArchive(), getDirsToSkipArchive()),
-		commands.NewCommand("enable Scheduled Task", utils.SetScheduledTaskStatus, enableTask),
+		//commands.NewCommand("enable Scheduled Task", utils.SetScheduledTaskStatus, enableTask),
 	}
 }
 
