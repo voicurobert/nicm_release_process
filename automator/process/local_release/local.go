@@ -74,14 +74,14 @@ func (l *localReleaseProcess) initCommands() {
 	}
 }
 
-func (l *localReleaseProcess) PrintCommands() {
+func (l *localReleaseProcess) PrintCommands(tabs int) {
 	for _, c := range l.commands {
-		c.Print()
+		c.Print(tabs)
 	}
 }
 
-func (l *localReleaseProcess) PrintOptions() {
-	l.Options.Print()
+func (l *localReleaseProcess) PrintOptions(tabs int) {
+	l.Options.Print(tabs)
 }
 
 func (l *localReleaseProcess) SetWorkingPath(path string) {

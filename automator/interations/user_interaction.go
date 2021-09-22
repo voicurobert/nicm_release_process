@@ -8,6 +8,7 @@ import (
 	"github.com/voicurobert/nicm_release_process/automator/process/options"
 	"github.com/voicurobert/nicm_release_process/automator/process/release_process/client_release_process"
 	"github.com/voicurobert/nicm_release_process/automator/process/release_process/server_release_process"
+	"strings"
 )
 
 const (
@@ -33,8 +34,8 @@ var (
 type ReleaseProcessInterface interface {
 	Execute() error
 	Init()
-	PrintCommands()
-	PrintOptions()
+	PrintCommands(int)
+	PrintOptions(int)
 	options.SetOptionsInterface
 }
 
@@ -51,9 +52,9 @@ type UserInteractionInterface interface {
 	setNextInteraction(command string, nextProcess UserInteractionInterface)
 	GetName() string
 	getNextInteraction() UserInteractionInterface
-	PrintPossibleInteraction()
-	PrintCommands()
-	PrintOptions()
+	PrintPossibleInteraction(int)
+	PrintCommands(int)
+	PrintOptions(int)
 	getReleaseProcess() ReleaseProcessInterface
 	options.SetOptionsInterface
 }
@@ -189,9 +190,9 @@ func (up *userInteraction) setNextInteraction(command string, nextProcess UserIn
 	up.interactions = append(up.interactions, &userCommand)
 }
 
-func (up *userInteraction) PrintPossibleInteraction() {
+func (up *userInteraction) PrintPossibleInteraction(tabs int) {
 	for _, process := range up.interactions {
-		fmt.Printf("\t")
+		fmt.Printf(strings.Repeat(" ", tabs))
 		fmt.Print(process.GetName())
 		fmt.Printf("\n")
 	}
@@ -226,15 +227,15 @@ func (up *userInteraction) getNextInteraction() UserInteractionInterface {
 	return up.nextInteraction
 }
 
-func (up *userInteraction) PrintCommands() {
+func (up *userInteraction) PrintCommands(tabs int) {
 	if up.releaseProcess != nil {
-		up.releaseProcess.PrintCommands()
+		up.releaseProcess.PrintCommands(tabs)
 	}
 }
 
-func (up *userInteraction) PrintOptions() {
+func (up *userInteraction) PrintOptions(tabs int) {
 	if up.releaseProcess != nil {
-		up.releaseProcess.PrintOptions()
+		up.releaseProcess.PrintOptions(tabs)
 	}
 }
 

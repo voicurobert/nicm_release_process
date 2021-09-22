@@ -22,8 +22,14 @@ func StartInteracting() {
 		fmt.Printf("Command [%s]:", getHistoryString())
 		scanner.Scan()
 		text := scanner.Text()
+		spaces := 9 + (len(historyPath) * 2)
+		for _, path := range historyPath {
+			spaces += len(path)
+		}
+
+		//tabs := len(historyPath)
 		if text == interations.HelpCommandText {
-			handleHelpCommand()
+			handleHelpCommand(spaces)
 			continue
 		}
 		if text == interations.ExitCommandText {
@@ -42,11 +48,11 @@ func StartInteracting() {
 			continue
 		}
 		if text == interations.PrintCommands {
-			currentInteraction.PrintCommands()
+			currentInteraction.PrintCommands(spaces)
 			continue
 		}
 		if text == options.PrintOptions {
-			currentInteraction.PrintOptions()
+			currentInteraction.PrintOptions(spaces)
 			continue
 		}
 		handleDefaultCommand(text)
@@ -73,8 +79,8 @@ func handleExecuteCommand() {
 	}
 }
 
-func handleHelpCommand() {
-	currentInteraction.PrintPossibleInteraction()
+func handleHelpCommand(spaces int) {
+	currentInteraction.PrintPossibleInteraction(spaces)
 }
 
 func handleDefaultCommand(text string) {

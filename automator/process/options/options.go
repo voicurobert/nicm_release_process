@@ -98,11 +98,12 @@ func (o *Options) GetBuildEnvPath() string {
 	return sb.String()
 }
 
-func (o *Options) Print() {
+func (o *Options) Print(tabs int) {
+	tabChars := strings.Repeat(" ", tabs)
 	attrs := reflect.ValueOf(o).Elem()
 	for i := 0; i < attrs.NumField(); i++ {
 		name := attrs.Type().Field(i).Name
 		value := attrs.Field(i).Interface()
-		fmt.Printf("\t%s -> %s \n", name, value)
+		fmt.Printf("%s%s -> %s \n", tabChars, name, value)
 	}
 }

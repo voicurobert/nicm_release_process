@@ -65,13 +65,13 @@ func (s *serverReleaseProcess) initCommands() {
 	}
 }
 
-func (s *serverReleaseProcess) PrintCommands() {
+func (s *serverReleaseProcess) PrintCommands(tabs int) {
 	for _, s := range s.commands {
-		s.Print()
+		s.Print(tabs)
 	}
 }
 
-func (s *serverReleaseProcess) PrintOptions() {
+func (s *serverReleaseProcess) PrintOptions(tabs int) {
 
 }
 

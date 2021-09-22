@@ -7,7 +7,7 @@ import (
 
 type CommandInterface interface {
 	Execute() error
-	Print()
+	Print(int)
 }
 
 type Command struct {
@@ -30,8 +30,9 @@ func (command *Command) Execute() error {
 	return nil
 }
 
-func (command *Command) Print() {
-	fmt.Printf("\t <!%s!> \n", command.Name)
+func (command *Command) Print(tabs int) {
+	tabChars := strings.Repeat(" ", tabs)
+	fmt.Printf("%s<!%s!> \n", tabChars, command.Name)
 }
 
 func (command *Command) SetParams(params ...interface{}) {

@@ -60,14 +60,14 @@ func (c *clientReleaseProcess) initCommands() {
 	}
 }
 
-func (c *clientReleaseProcess) PrintCommands() {
+func (c *clientReleaseProcess) PrintCommands(tabs int) {
 	for _, c := range c.commands {
-		c.Print()
+		c.Print(tabs)
 	}
 }
 
-func (c *clientReleaseProcess) PrintOptions() {
-	c.Options.Print()
+func (c *clientReleaseProcess) PrintOptions(tabs int) {
+	c.Options.Print(tabs)
 }
 
 func (c *clientReleaseProcess) SetWorkingPath(path string) {

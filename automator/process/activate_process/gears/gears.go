@@ -47,14 +47,14 @@ func (g *gearsRelease) initCommands() {
 	}
 }
 
-func (g *gearsRelease) PrintCommands() {
+func (g *gearsRelease) PrintCommands(tabs int) {
 	for _, c := range g.commands {
-		c.Print()
+		c.Print(tabs)
 	}
 }
 
-func (g *gearsRelease) PrintOptions() {
-	g.Options.Print()
+func (g *gearsRelease) PrintOptions(tabs int) {
+	g.Options.Print(tabs)
 }
 
 func (g *gearsRelease) SetWorkingPath(path string) {

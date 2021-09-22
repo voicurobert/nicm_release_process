@@ -14,7 +14,9 @@ I. Prepare release
         
     B - Server node1932 172.18.49.25, will connect with user and password
 	    1. Client steps from 1-4 are the same
-	    2. create archive from nicm_products but remove night_scripts and nig dirs and add dynamic_patches si diagnostics_mysql_151, from externals dir
+	    2. create archive from nicm_products but
+	        * remove night_scripts and nig dirs
+	        * add dynamic_patches and diagnostics_mysql_151, from externals dir
 	    2. using scp, copy archive in /nicm/ disk location
 
         172.16.10.207

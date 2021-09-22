@@ -56,14 +56,14 @@ func (n *nigRelease) initCommands() {
 	}
 }
 
-func (n *nigRelease) PrintCommands() {
+func (n *nigRelease) PrintCommands(tabs int) {
 	for _, c := range n.commands {
-		c.Print()
+		c.Print(tabs)
 	}
 }
 
-func (n *nigRelease) PrintOptions() {
-	n.Options.Print()
+func (n *nigRelease) PrintOptions(tabs int) {
+	n.Options.Print(tabs)
 }
 
 func (n *nigRelease) SetWorkingPath(path string) {
