@@ -12,8 +12,9 @@ type clientReleaseProcess struct {
 }
 
 const (
-	workingPath     = "C:\\NIG\\"
-	archiveName     = "nicm_products_client.zip"
+	//workingPath     = "C:\\NIG\\"
+	workingPath     = "C:\\sw\\nicm\\nicm_529\\"
+	archiveName     = "nicm.zip"
 	magikcExtension = ".magikc"
 	magikExtension  = ".magik"
 )
@@ -41,22 +42,18 @@ func (c *clientReleaseProcess) initOptions() {
 	c.Options = options.New(workingPath)
 }
 
-func getDirsToArchive() []string {
-	return []string{"nicm_master\\nicm_products\\"}
-}
-
-func getImageNames() []string {
-	return []string{"nicm_open", "nicm_closed"}
+func (c *clientReleaseProcess) getDirsToArchive() []string {
+	return []string{c.Options.GitPath}
 }
 
 func (c *clientReleaseProcess) initCommands() {
 	c.commands = []commands.CommandInterface{
-		commands.NewCommand("execute git pull", utils.ExecuteGitPull, c.Options.GetGitPath()),
-		commands.NewCommand("delete magikc files", utils.DeleteFiles, c.Options.GetGitPath(), magikcExtension),
-		commands.NewCommand("build images", utils.BuildImages, c.Options.GetBuildPath()),
-		commands.NewCommand("set writable access", utils.SetWritableAccess, c.Options.GetImagesPath(), getImageNames()),
-		commands.NewCommand("delete magik files", utils.DeleteFiles, c.Options.GetGitPath(), magikExtension),
-		commands.NewCommand("creating archive", utils.CreateArchive, c.Options.WorkingPath, archiveName, getDirsToArchive()),
+		//commands.NewCommand("execute git pull", utils.ExecuteGitPull, c.Options.GetGitPath()),
+		//commands.NewCommand("delete magikc files", utils.DeleteFiles, c.Options.GetGitPath(), magikcExtension),
+		//commands.NewCommand("delete jars", utils.DeleteJars, c.Options.GetBuildPath()),
+		//commands.NewCommand("compile jars", utils.CompileJars, c.Options.GetBuildPath()),
+		//commands.NewCommand("delete magik files", utils.DeleteFiles, c.Options.GetGitPath(), magikExtension),
+		commands.NewCommand("creating archive", utils.CreateArchive, c.Options.WorkingPath, archiveName, c.getDirsToArchive()),
 	}
 }
 
@@ -72,18 +69,6 @@ func (c *clientReleaseProcess) PrintOptions(tabs int) {
 
 func (c *clientReleaseProcess) SetWorkingPath(path string) {
 	c.Options.SetWorkingPath(path)
-}
-
-func (c *clientReleaseProcess) SetBuildPath(path string) {
-	c.Options.SetBuildPath(path)
-}
-
-func (c *clientReleaseProcess) SetAntCommand(path string) {
-	c.Options.SetAntCommand(path)
-}
-
-func (c *clientReleaseProcess) SetImagesPath(path string) {
-	c.Options.SetImagesPath(path)
 }
 
 func (c *clientReleaseProcess) SetGitPath(path string) {

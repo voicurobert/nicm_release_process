@@ -50,7 +50,6 @@ func (n *nigRelease) initCommands() {
 		commands.NewCommand("restart GSS agents", utils.RunPowerShellScript, n.Options.GetBuildPath()+restartGSSAgentsScriptNameA),
 		commands.NewCommand("execute git pull", utils.ExecuteGitPull, n.Options.GetGitPath()),
 		commands.NewCommand("delete magikc files", utils.DeleteFiles, n.Options.GetGitPath(), magikcExtension),
-		commands.NewCommand("build images", utils.BuildImages, n.Options.GetBuildPath()),
 		commands.NewCommand("restart GSS agents", utils.RunPowerShellScript, n.Options.GetBuildPath()+restartGSSAgentsScriptNameA),
 		commands.NewCommand("disable Scheduled Task", utils.SetScheduledTaskStatus, enableTask),
 	}
@@ -68,18 +67,6 @@ func (n *nigRelease) PrintOptions(tabs int) {
 
 func (n *nigRelease) SetWorkingPath(path string) {
 	n.Options.SetWorkingPath(path)
-}
-
-func (n *nigRelease) SetBuildPath(path string) {
-	n.Options.SetBuildPath(path)
-}
-
-func (n *nigRelease) SetAntCommand(path string) {
-	n.Options.SetAntCommand(path)
-}
-
-func (n *nigRelease) SetImagesPath(path string) {
-	n.Options.SetImagesPath(path)
 }
 
 func (n *nigRelease) SetGitPath(path string) {

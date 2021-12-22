@@ -118,18 +118,6 @@ func handleSetOptionsMethod(option, value string) error {
 		currentInteraction.SetGitPath(value)
 		return nil
 	}
-	if option == options.SetBuildPath {
-		currentInteraction.SetBuildPath(value)
-		return nil
-	}
-	if option == options.SetAntCommand {
-		currentInteraction.SetAntCommand(value)
-		return nil
-	}
-	if option == options.SetImagesPath {
-		currentInteraction.SetImagesPath(value)
-		return nil
-	}
 	return errors.New(fmt.Sprintf("unknown option: %s", option))
 }
 

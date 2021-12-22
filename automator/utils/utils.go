@@ -42,13 +42,22 @@ func ExecuteGitPull(args ...interface{}) error {
 	return executeCommand("cmd.exe", "/C", "git pull")
 }
 
-func BuildImages(args ...interface{}) error {
+func DeleteJars(args ...interface{}) error {
 	path := args[0].(string)
 	err := os.Chdir(path)
 	if err != nil {
 		return err
 	}
-	return executeCommand("cmd.exe", "/C", path+"build_all.bat")
+	return executeCommand("cmd.exe", "/C", path+"delete_compiled_nicm.bat")
+}
+
+func CompileJars(args ...interface{}) error {
+	path := args[0].(string)
+	err := os.Chdir(path)
+	if err != nil {
+		return err
+	}
+	return executeCommand("cmd.exe", "/C", path+"start_compile_all.bat")
 }
 
 func SetScheduledTaskStatus(args ...interface{}) error {
@@ -114,32 +123,13 @@ func executeCommand(command string, args ...string) error {
 	return nil
 }
 
-func SetWritableAccess(args ...interface{}) error {
-	fullPath := args[0].(string)
-	imageNames := args[1].([]string)
-	return filepath.Walk(fullPath, func(path string, info fs.FileInfo, err error) error {
-		if !info.IsDir() {
-			for _, imageName := range imageNames {
-				if strings.Contains(path, imageName) {
-					err := os.Chmod(path, 0222)
-					if err != nil {
-						fmt.Printf("error setting writable access %s \n", err.Error())
-						return err
-					}
-				}
-			}
-		}
-		return nil
-	})
-}
-
 func CreateArchive(args ...interface{}) error {
 	path := args[0].(string)
 	outName := args[1].(string)
 	dirsToArchive := args[2].([]string)
-	var dirsToSkip = make([]string, 0)
+	var skippedDirsFromArchive = make([]string, 0)
 	if len(args) > 3 {
-		dirsToSkip = args[3].([]string)
+		skippedDirsFromArchive = args[3].([]string)
 	}
 
 	err := os.Chdir(path)
@@ -159,7 +149,7 @@ func CreateArchive(args ...interface{}) error {
 	defer archive.Close()
 
 	for _, path := range dirsToArchive {
-		err := addFiles(archive, path, dirsToSkip)
+		err := addFiles(archive, path, skippedDirsFromArchive)
 		if err != nil {
 			return err
 		}
@@ -191,6 +181,10 @@ func addFiles(w *zip.Writer, rootDir string, dirsToSkip []string) error {
 		}
 		if info.IsDir() {
 			if isSkippedDir(info.Name(), dirsToSkip) {
+				return filepath.SkipDir
+			}
+			if strings.Contains(info.Name(), ".git") {
+				fmt.Printf("skipped 2")
 				return filepath.SkipDir
 			}
 			header.Name += "/"

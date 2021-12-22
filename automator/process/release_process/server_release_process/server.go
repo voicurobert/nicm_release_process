@@ -43,7 +43,7 @@ func (s *serverReleaseProcess) initOptions() {
 }
 
 func getDirsToArchive() []string {
-	return []string{"nicm_master\\nicm_products\\", "nicm_master\\dynamic_patches\\", "externals\\diagnostics_mysql_151\\"}
+	return []string{"nicm\\nicm_products\\", "nicm\\dynamic_patches\\", "externals\\diagnostics_mysql_151\\"}
 }
 
 func getDirsToSkipArchive() []string {
@@ -77,18 +77,6 @@ func (s *serverReleaseProcess) PrintOptions(tabs int) {
 
 func (s *serverReleaseProcess) SetWorkingPath(path string) {
 	s.Options.SetWorkingPath(path)
-}
-
-func (s *serverReleaseProcess) SetBuildPath(path string) {
-	s.Options.SetBuildPath(path)
-}
-
-func (s *serverReleaseProcess) SetAntCommand(path string) {
-	s.Options.SetAntCommand(path)
-}
-
-func (s *serverReleaseProcess) SetImagesPath(path string) {
-	s.Options.SetImagesPath(path)
 }
 
 func (s *serverReleaseProcess) SetGitPath(path string) {

@@ -125,14 +125,6 @@ func initSetOptionsProcess(optionsProcess UserInteractionInterface) {
 	optionsProcess.setNextInteraction(options.SetGitPath, &setGitPathProcess)
 	initDefaultProcesses(&setGitPathProcess, optionsProcess)
 
-	setBuildPathProcess := userInteraction{Name: options.SetBuildPath}
-	optionsProcess.setNextInteraction(options.SetBuildPath, &setBuildPathProcess)
-	initDefaultProcesses(&setBuildPathProcess, optionsProcess)
-
-	setAntCommandProcess := userInteraction{Name: options.SetAntCommand}
-	optionsProcess.setNextInteraction(options.SetAntCommand, &setAntCommandProcess)
-	initDefaultProcesses(&setAntCommandProcess, optionsProcess)
-
 	setImagesCommandProcess := userInteraction{Name: options.SetImagesPath}
 	optionsProcess.setNextInteraction(options.SetImagesPath, &setImagesCommandProcess)
 	initDefaultProcesses(&setImagesCommandProcess, optionsProcess)
@@ -247,21 +239,6 @@ func (up *userInteraction) SetWorkingPath(path string) {
 func (up *userInteraction) SetGitPath(path string) {
 	p := up.getRealReleaseProcess()
 	p.SetGitPath(path)
-}
-
-func (up *userInteraction) SetBuildPath(path string) {
-	p := up.getRealReleaseProcess()
-	p.SetBuildPath(path)
-}
-
-func (up *userInteraction) SetImagesPath(path string) {
-	p := up.getRealReleaseProcess()
-	p.SetImagesPath(path)
-}
-
-func (up *userInteraction) SetAntCommand(path string) {
-	p := up.getRealReleaseProcess()
-	p.SetAntCommand(path)
 }
 
 func (up *userInteraction) getReleaseProcess() ReleaseProcessInterface {

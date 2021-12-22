@@ -43,7 +43,6 @@ func (g *gearsRelease) initOptions() {
 func (g *gearsRelease) initCommands() {
 	g.commands = []commands.CommandInterface{
 		commands.NewCommand("execute git pull", utils.ExecuteGitPull, g.Options.GetGitPath()),
-		commands.NewCommand("build images", utils.BuildImages, g.Options.GetBuildPath()),
 	}
 }
 
@@ -59,18 +58,6 @@ func (g *gearsRelease) PrintOptions(tabs int) {
 
 func (g *gearsRelease) SetWorkingPath(path string) {
 	g.Options.SetWorkingPath(path)
-}
-
-func (g *gearsRelease) SetBuildPath(path string) {
-	g.Options.SetBuildPath(path)
-}
-
-func (g *gearsRelease) SetAntCommand(path string) {
-	g.Options.SetAntCommand(path)
-}
-
-func (g *gearsRelease) SetImagesPath(path string) {
-	g.Options.SetImagesPath(path)
 }
 
 func (g *gearsRelease) SetGitPath(path string) {
