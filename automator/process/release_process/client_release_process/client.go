@@ -48,11 +48,11 @@ func (c *clientReleaseProcess) getDirsToArchive() []string {
 
 func (c *clientReleaseProcess) initCommands() {
 	c.commands = []commands.CommandInterface{
-		//commands.NewCommand("execute git pull", utils.ExecuteGitPull, c.Options.GetGitPath()),
-		//commands.NewCommand("delete magikc files", utils.DeleteFiles, c.Options.GetGitPath(), magikcExtension),
-		//commands.NewCommand("delete jars", utils.DeleteJars, c.Options.GetBuildPath()),
-		//commands.NewCommand("compile jars", utils.CompileJars, c.Options.GetBuildPath()),
-		//commands.NewCommand("delete magik files", utils.DeleteFiles, c.Options.GetGitPath(), magikExtension),
+		commands.NewCommand("execute git pull", utils.ExecuteGitPull, c.Options.GetGitPath()),
+		commands.NewCommand("delete magikc files", utils.DeleteFiles, c.Options.GetGitPath(), magikcExtension),
+		commands.NewCommand("delete jars", utils.DeleteJars, c.Options.GetBuildPath()),
+		commands.NewCommand("compile jars", utils.CompileJars, c.Options.GetBuildPath()),
+		commands.NewCommand("delete magik files", utils.DeleteFiles, c.Options.GetGitPath(), magikExtension),
 		commands.NewCommand("creating archive", utils.CreateArchive, c.Options.WorkingPath, archiveName, c.getDirsToArchive()),
 	}
 }
