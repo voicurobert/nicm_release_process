@@ -12,21 +12,23 @@ import (
 	"strings"
 )
 
+var (
+	skipRemovedDirs = []string{"release_patches", "dynamic_patches", "config", "nicm_dts_image", "nicm_register_web_services", "run", "run5"}
+)
+
 func DeleteFiles(args ...interface{}) error {
 	rootDir := args[0].(string)
 	fileExtension := args[1].(string)
 	return filepath.Walk(rootDir, func(path string, info fs.FileInfo, err error) error {
-		if !info.IsDir() {
-			if strings.Contains(path, "release_patches") ||
-				strings.Contains(path, "dynamic_patches") ||
-				strings.Contains(path, "build_nicm_linux") {
-				return nil
-			}
-			if strings.HasSuffix(info.Name(), fileExtension) {
-				err := os.Remove(path)
-				if err != nil {
-					return err
+		if info.IsDir() {
+			for _, dirName := range skipRemovedDirs {
+				if dirName == info.Name() {
+					return filepath.SkipDir
 				}
+			}
+		} else {
+			if strings.HasSuffix(info.Name(), fileExtension) {
+				_ = os.Remove(path)
 			}
 		}
 		return nil
@@ -61,14 +63,8 @@ func CompileJars(args ...interface{}) error {
 }
 
 func SetScheduledTaskStatus(args ...interface{}) error {
-	disableTask := args[0].(string)
+	taskCommand := args[0].(string)
 	disableTaskArgs := []string{"-NoProfile", "-NonInteractive"}
-	var taskCommand string
-	if disableTask == "true" {
-		taskCommand = "Disable-ScheduledTask"
-	} else {
-		taskCommand = "Enable-ScheduledTask"
-	}
 	disableTaskArgs = append(disableTaskArgs, taskCommand)
 	disableTaskArgs = append(disableTaskArgs, "-TaskPath", "\"\\NICM\\\"", "-TaskName", "\"Test\"")
 	return runPowerShellCommand(disableTaskArgs...)

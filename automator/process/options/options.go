@@ -11,7 +11,6 @@ const (
 	SetOptions     = "set_options"
 	SetWorkingPath = "set_working_path"
 	SetGitPath     = "set_git_path"
-	SetImagesPath  = "set_images_path"
 
 	SetOptionSeparator = "="
 

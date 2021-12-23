@@ -8,8 +8,8 @@ import (
 
 const (
 	workingPath = "C:\\NIG\\"
-	disableTask = "false"
-	enableTask  = "true"
+	disableTask = "Disable-ScheduledTask"
+	enableTask  = "Enable-ScheduledTask"
 
 	magikcExtension             = ".magikc"
 	restartGSSAgentsScriptNameA = ""

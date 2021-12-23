@@ -124,10 +124,6 @@ func initSetOptionsProcess(optionsProcess UserInteractionInterface) {
 	setGitPathProcess := userInteraction{Name: options.SetGitPath}
 	optionsProcess.setNextInteraction(options.SetGitPath, &setGitPathProcess)
 	initDefaultProcesses(&setGitPathProcess, optionsProcess)
-
-	setImagesCommandProcess := userInteraction{Name: options.SetImagesPath}
-	optionsProcess.setNextInteraction(options.SetImagesPath, &setImagesCommandProcess)
-	initDefaultProcesses(&setImagesCommandProcess, optionsProcess)
 }
 
 func initServerReleaseProcess(releaseProcess UserInteractionInterface) {
@@ -247,7 +243,7 @@ func (up *userInteraction) getReleaseProcess() ReleaseProcessInterface {
 
 func (up *userInteraction) getRealReleaseProcess() ReleaseProcessInterface {
 	prevProcess := up.NextInteraction(PreviousProcess)
-	max := 10
+	max := 20
 	count := 0
 	for {
 		if count == max {
