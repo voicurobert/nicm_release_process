@@ -14,7 +14,7 @@ const (
 
 	SetOptionSeparator = "="
 
-	gitPath   = "nic\\"
+	gitPath   = "nicm\\"
 	buildPath = "run5\\nicm\\"
 )
 
