@@ -47,6 +47,7 @@ func (c *clientReleaseProcess) getDirsToArchive() []string {
 }
 
 func (c *clientReleaseProcess) initCommands() {
+	c.commands = nil
 	c.commands = []commands.CommandInterface{
 		commands.NewCommand("execute git pull", utils.ExecuteGitPull, c.Options.GetGitPath()),
 		commands.NewCommand("delete magikc files", utils.DeleteFiles, c.Options.GetGitPath(), magikcExtension),
@@ -69,8 +70,10 @@ func (c *clientReleaseProcess) PrintOptions(tabs int) {
 
 func (c *clientReleaseProcess) SetWorkingPath(path string) {
 	c.Options.SetWorkingPath(path)
+	c.initCommands()
 }
 
 func (c *clientReleaseProcess) SetGitPath(path string) {
 	c.Options.SetGitPath(path)
+	c.initCommands()
 }
