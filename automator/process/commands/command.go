@@ -2,6 +2,7 @@ package commands
 
 import (
 	"fmt"
+	"github.com/fatih/color"
 	"strings"
 )
 
@@ -10,37 +11,38 @@ type CommandInterface interface {
 	Print(int)
 }
 
-type Command struct {
+type command struct {
 	Name     string
 	Function func(...interface{}) error
 	Params   []interface{}
 }
 
-func (command *Command) Execute() error {
-	if command.Function != nil {
-		fmt.Printf("executing command -> %s\n", command.Name)
-		err := command.Function(command.Params...)
+func (c *command) Execute() error {
+	if c.Function != nil {
+		color.Yellow("executing c -> %s\n", c.Name)
+		err := c.Function(c.Params...)
 		if err != nil {
-			fmt.Printf("error when executing command: %s\n", err.Error())
+			color.Red("error when executing c: %s\n", err.Error())
 			return nil
 		}
-		fmt.Println("success!")
-		fmt.Println(strings.Repeat("-#", 50))
+		color.Green("Success!\n")
+		color.Green(strings.Repeat("-#", 50))
+		fmt.Println()
 	}
 	return nil
 }
 
-func (command *Command) Print(tabs int) {
+func (c *command) Print(tabs int) {
 	tabChars := strings.Repeat(" ", tabs)
-	fmt.Printf("%s<!%s!> \n", tabChars, command.Name)
+	color.Yellow("%s<!%s!> \n", tabChars, c.Name)
 }
 
-func (command *Command) SetParams(params ...interface{}) {
-	command.Params = params
+func (c *command) SetParams(params ...interface{}) {
+	c.Params = params
 }
 
-func NewCommand(name string, function func(...interface{}) error, args ...interface{}) CommandInterface {
-	return &Command{
+func New(name string, function func(...interface{}) error, args ...interface{}) CommandInterface {
+	return &command{
 		Name:     name,
 		Function: function,
 		Params:   args,

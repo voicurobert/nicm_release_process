@@ -42,7 +42,8 @@ func (g *gearsRelease) initOptions() {
 
 func (g *gearsRelease) initCommands() {
 	g.commands = []commands.CommandInterface{
-		commands.NewCommand("execute git pull", utils.ExecuteGitPull, g.Options.GetGitPath()),
+		commands.New("git pull", utils.ExecuteGitPull, g.Options.GetGitPath()),
+		commands.New("build jars", utils.BuildJars, g.Options.GetBuildPath()),
 	}
 }
 

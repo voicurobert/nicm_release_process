@@ -2,6 +2,7 @@ package interations
 
 import (
 	"fmt"
+	"github.com/fatih/color"
 	"github.com/voicurobert/nicm_release_process/automator/process/activate_process/gears"
 	"github.com/voicurobert/nicm_release_process/automator/process/activate_process/nig_release"
 	local "github.com/voicurobert/nicm_release_process/automator/process/local_release"
@@ -180,10 +181,10 @@ func (up *userInteraction) setNextInteraction(command string, nextProcess UserIn
 
 func (up *userInteraction) PrintPossibleInteraction(tabs int) {
 	for _, process := range up.interactions {
-		fmt.Printf(strings.Repeat(" ", tabs))
-		fmt.Print(process.GetName())
-		fmt.Printf("\n")
+		fmt.Print(strings.Repeat(" ", tabs))
+		color.Yellow(process.GetName())
 	}
+	fmt.Printf("\n")
 }
 
 func (up *userInteraction) NextInteraction(cmd string) UserInteractionInterface {
@@ -192,7 +193,7 @@ func (up *userInteraction) NextInteraction(cmd string) UserInteractionInterface 
 			return process.getNextInteraction()
 		}
 	}
-	fmt.Println("next interaction not found...")
+	color.Red("next interaction not found...\n")
 	return up
 }
 
@@ -201,7 +202,7 @@ func (up *userInteraction) Execute() bool {
 		return false
 	}
 	if err := up.releaseProcess.Execute(); err != nil {
-		fmt.Printf("error executing interations %s:", err.Error())
+		color.Red("error executing interactions %s: \n", err.Error())
 		panic(err)
 	}
 	return true

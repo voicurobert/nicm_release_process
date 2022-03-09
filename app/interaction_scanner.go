@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
+	"github.com/fatih/color"
 	"github.com/voicurobert/nicm_release_process/automator/interations"
 	"github.com/voicurobert/nicm_release_process/automator/process/options"
 	"os"
@@ -19,7 +20,7 @@ func StartInteracting() {
 	scanner := bufio.NewScanner(os.Stdin)
 	historyPath[0] = currentInteraction.GetName()
 	for {
-		fmt.Printf("Command [%s]:", getHistoryString())
+		color.Cyan("Command [%s]:", getHistoryString())
 		scanner.Scan()
 		text := scanner.Text()
 		spaces := 9 + (len(historyPath) * 2)
@@ -27,7 +28,6 @@ func StartInteracting() {
 			spaces += len(path)
 		}
 
-		//tabs := len(historyPath)
 		if text == interations.HelpCommandText {
 			handleHelpCommand(spaces)
 			continue
@@ -60,7 +60,11 @@ func StartInteracting() {
 }
 
 func handleNewCommand(text string) {
-	currentInteraction = currentInteraction.NextInteraction(text)
+	nextInter := currentInteraction.NextInteraction(text)
+	if nextInter.GetName() == currentInteraction.GetName() {
+		return
+	}
+	currentInteraction = nextInter
 	addHistory(currentInteraction.GetName())
 }
 
@@ -86,11 +90,11 @@ func handleHelpCommand(spaces int) {
 func handleDefaultCommand(text string) {
 	ok, err := setOption(text)
 	if err != nil {
-		fmt.Println(err.Error())
+		color.Red(err.Error())
 		return
 	}
 	if !ok {
-		fmt.Println("unknown command...")
+		color.Red("unknown command...")
 	}
 }
 

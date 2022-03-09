@@ -62,12 +62,12 @@ func getSkippedDirsFromArchive() []string {
 
 func (l *localReleaseProcess) initCommands() {
 	l.commands = []commands.CommandInterface{
-		commands.NewCommand("execute git pull", utils.ExecuteGitPull, l.Options.GetGitPath()),
-		commands.NewCommand("delete magikc files", utils.DeleteFiles, l.Options.GetGitPath(), magikcExtension),
-		commands.NewCommand("delete jars", utils.DeleteJars, l.Options.GetBuildPath()),
-		commands.NewCommand("compile jars", utils.CompileJars, l.Options.GetBuildPath()),
-		commands.NewCommand("delete magik files", utils.DeleteFiles, l.Options.GetGitPath(), magikExtension),
-		commands.NewCommand("creating archive", utils.CreateArchive, l.Options.WorkingPath, clientArchiveName, getClientDirsToArchive()),
+		commands.New("execute git pull", utils.ExecuteGitPull, l.Options.GetGitPath()),
+		commands.New("delete magikc files", utils.DeleteFiles, l.Options.GetGitPath(), magikcExtension),
+		commands.New("delete jars", utils.DeleteJars, l.Options.GetBuildPath()),
+		commands.New("compile jars", utils.CompileJars, l.Options.GetBuildPath()),
+		commands.New("delete magik files", utils.DeleteFiles, l.Options.GetGitPath(), magikExtension),
+		commands.New("creating archive", utils.CreateArchive, l.Options.WorkingPath, clientArchiveName, getClientDirsToArchive()),
 	}
 }
 

@@ -4,6 +4,8 @@ import (
 	"archive/zip"
 	"bufio"
 	"fmt"
+	"github.com/fatih/color"
+	"github.com/sfreiberg/simplessh"
 	"io"
 	"io/fs"
 	"os"
@@ -13,7 +15,14 @@ import (
 )
 
 var (
-	skipRemovedDirs = []string{"release_patches", "dynamic_patches", "config", "nicm_dts_image", "nicm_register_web_services", "run", "run5"}
+	skipRemovedDirs = []string{
+		"release_patches",
+		"dynamic_patches",
+		"config",
+		"nicm_dts_image",
+		"nicm_register_web_services",
+		"run",
+		"run5"}
 )
 
 func DeleteFiles(args ...interface{}) error {
@@ -62,6 +71,23 @@ func CompileJars(args ...interface{}) error {
 	return executeCommand("cmd.exe", "/C", path+"start_compile_all.bat")
 }
 
+func BuildJars(args ...interface{}) error {
+	path := args[0].(string)
+	err := os.Chdir(path)
+	if err != nil {
+		return err
+	}
+	err = executeCommand("cmd.exe", "/C", path+"delete_compiled_nicm.bat")
+	if err != nil {
+		return err
+	}
+	err = executeCommand("cmd.exe", "/C", path+"start_compile_all.bat")
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func SetScheduledTaskStatus(args ...interface{}) error {
 	taskCommand := args[0].(string)
 	disableTaskArgs := []string{"-NoProfile", "-NonInteractive"}
@@ -88,32 +114,23 @@ func executeCommand(command string, args ...string) error {
 	cmd := exec.Command(command, args...)
 	cmdReader, err := cmd.StdoutPipe()
 	if err != nil {
-		_, err2 := fmt.Fprintln(os.Stderr, "Error creating StdoutPipe for Cmd", err)
-		if err2 != nil {
-			return err2
-		}
+		_, _ = fmt.Fprintln(os.Stderr, "Error creating StdoutPipe for Cmd", err)
 		return err
 	}
 	scanner := bufio.NewScanner(cmdReader)
 	go func() {
 		for scanner.Scan() {
-			fmt.Printf("\t > %s\n", scanner.Text())
+			color.Yellow("\t > %s\n", scanner.Text())
 		}
 	}()
 	err = cmd.Start()
 	if err != nil {
-		_, err2 := fmt.Fprintln(os.Stderr, "Error starting Cmd", err)
-		if err2 != nil {
-			return err2
-		}
+		_, _ = fmt.Fprintln(os.Stderr, "Error starting Cmd", err)
 		return err
 	}
 	err = cmd.Wait()
 	if err != nil {
-		_, err2 := fmt.Fprintln(os.Stderr, "Error waiting for Cmd", err)
-		if err2 != nil {
-			return err2
-		}
+		_, _ = fmt.Fprintln(os.Stderr, "Error waiting for Cmd", err)
 		return err
 	}
 	return nil
@@ -130,19 +147,29 @@ func CreateArchive(args ...interface{}) error {
 
 	err := os.Chdir(path)
 	if err != nil {
-		fmt.Printf("error changing dir %s: \n", err)
+		color.Red("error changing dir %s: \n", err)
 		return err
 	}
 	outFile, err := os.Create(path + outName)
 	if err != nil {
-		fmt.Println(err.Error())
+		color.Red(err.Error())
 		return err
 	}
-	defer outFile.Close()
+	defer func(outFile *os.File) {
+		err := outFile.Close()
+		if err != nil {
+
+		}
+	}(outFile)
 
 	archive := zip.NewWriter(outFile)
 
-	defer archive.Close()
+	defer func(archive *zip.Writer) {
+		err := archive.Close()
+		if err != nil {
+
+		}
+	}(archive)
 
 	for _, path := range dirsToArchive {
 		err := addFiles(archive, path, skippedDirsFromArchive)
@@ -180,7 +207,6 @@ func addFiles(w *zip.Writer, rootDir string, dirsToSkip []string) error {
 				return filepath.SkipDir
 			}
 			if strings.Contains(info.Name(), ".git") {
-				fmt.Printf("skipped 2")
 				return filepath.SkipDir
 			}
 			header.Name += "/"
@@ -198,7 +224,12 @@ func addFiles(w *zip.Writer, rootDir string, dirsToSkip []string) error {
 		if err != nil {
 			return err
 		}
-		defer file.Close()
+		defer func(file *os.File) {
+			err := file.Close()
+			if err != nil {
+
+			}
+		}(file)
 		_, err = io.Copy(writer, file)
 		return err
 	})
@@ -220,13 +251,103 @@ func isSkippedDir(dirName string, dirsToSkip []string) bool {
 	return false
 }
 
+const (
+	host     = "172.16.10.207"
+	username = "laur"
+	password = ""
+)
+
 func MoveArchive(args ...interface{}) error {
 	sourcePath := args[0].(string)
 	destPath := args[1].(string)
-	archiveName := args[2].(string)
-	//cmdArgs := []string{"-p", "T#ink2!", "scp", "-r", sourcePath, "laur", "@", "172.16.10.207", ":", destPath + "//" + archiveName}
-	arg := fmt.Sprintf("-p %s %s %s@%s:%s", "T#ink2!", sourcePath+archiveName, "laur", "172.16.10.207", destPath+archiveName)
-	fmt.Println(arg)
-	cmdArgs := []string{arg}
-	return executeCommand("ssh", cmdArgs...)
+
+	var client *simplessh.Client
+	var err error
+
+	if client, err = simplessh.ConnectWithPassword(host, username, password); err != nil {
+		return err
+	}
+	defer client.Close()
+	err = client.Upload(sourcePath, destPath)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func RenameArchive(args ...interface{}) error {
+	currentName := args[0].(string)
+	newName := args[1].(string)
+	var client *simplessh.Client
+	var err error
+
+	if client, err = simplessh.ConnectWithPassword(host, username, password); err != nil {
+		return err
+	}
+	defer client.Close()
+	_, err = client.Exec(fmt.Sprintf("mv %s %s", currentName, newName))
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func DeleteOldArchive(args ...interface{}) error {
+	name := args[0].(string)
+
+	var client *simplessh.Client
+	var err error
+
+	if client, err = simplessh.ConnectWithPassword(host, username, password); err != nil {
+		return err
+	}
+	defer client.Close()
+	_, err = client.Exec(fmt.Sprintf("rm %s", name))
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func Unzip(args ...interface{}) error {
+	zipName := args[0].(string)
+
+	var client *simplessh.Client
+	var err error
+
+	if client, err = simplessh.ConnectWithPassword(host, username, password); err != nil {
+		return err
+	}
+	defer client.Close()
+	_, err = client.Exec(fmt.Sprintf("unzip %s", zipName))
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func BuildImage(args ...interface{}) error {
+	shellBatPath := args[0].(string)
+
+	var client *simplessh.Client
+	var err error
+
+	if client, err = simplessh.ConnectWithPassword(host, username, password); err != nil {
+		return err
+	}
+	defer client.Close()
+	_, err = client.Exec(fmt.Sprintf("run .sh from %s ", shellBatPath))
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

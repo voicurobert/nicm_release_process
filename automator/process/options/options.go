@@ -1,7 +1,7 @@
 package options
 
 import (
-	"fmt"
+	"github.com/fatih/color"
 	"reflect"
 	"strings"
 )
@@ -65,6 +65,6 @@ func (o *Options) Print(tabs int) {
 	for i := 0; i < attrs.NumField(); i++ {
 		name := attrs.Type().Field(i).Name
 		value := attrs.Field(i).Interface()
-		fmt.Printf("%s%s -> %s \n", tabChars, name, value)
+		color.Yellow("%s%s -> %s \n", tabChars, name, value)
 	}
 }

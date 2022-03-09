@@ -1,21 +1,18 @@
 ##########################------------- S T E P S ------------- ##########################
 
-Test app with administrator, and check powershell
 
 I. Prepare release
 
     A - NIG Client
-        1. delete .magikc files
         2. git pull
         3. build all nicm images
-        4. set all nicm_open, nicm_closed images (.msf, .mf) to write mode (remove readonly mode)
-        5. remove .magik files
-        6. create client archive from nicm_products
+        4. remove .magik files
+        5. create client archive from nicm_products; remove dirs:nicm_munit, nicm_nig, nicm_nig_resources, nicm_nig_web, nicm_night_scripts, nicm_probe, nicm_upgrade_framework,
         
-    B - Server node1932 172.18.49.25, will connect with user and password
+    B - Server node1932 172.18.49.25 (dsnicm|aergistal), will connect with user and password
 	    1. Client steps from 1-4 are the same
 	    2. create archive from nicm_products but
-	        * remove night_scripts and nig dirs
+	        * remove remove dirs: nicm_munit, nicm_nig, nicm_nig_resources, nicm_nig_web, nicm_night_scripts, nicm_probe, nicm_upgrade_framework,
 	        * add dynamic_patches and diagnostics_mysql_151, from externals dir
 	    2. using scp, copy archive in /nicm/ disk location
 
@@ -23,30 +20,34 @@ I. Prepare release
         laur, T#ink2!
 
 	    /* Steps made in linux machine */
+
 	        * delete nicm_products_old
 	        * rename nicm_products to nicm_products_old
 	        * decompress archive
-	        * build images:
-	            - run .sh from /nicm/build_nicm_linux/lni_server@nicm_prod/start/build_all_nicm_closed_and_open.sh
-	            - run .sh from /nicm/build_nicm_linux/job_server@nicm_prod/start/build_all_nicm_closed_and_open.sh
+	        * screen -R job.server (screen -d job.server)
+	        * quit() command
+	        * start job_server....
+	        * check how to exit screen ctrl+a ctrl+d
+
+	        * screen -R lni.server (screen -d job.server)
+            * quit() command
+            * start job_server....
+            * check how to exit screen ctrl+a ctrl+d
+
+
 
 II. Activate release
 
 	A - NIG 
-	    1. deactivate scheduled task "GSS agent" from task scheduler
-	    2. run power shell NIG\nicm_master\run\nicm430\restart_gss_agents.ps1 - fara liniile 25, 26 TODO de facut un nou script
-	    3. git pull
-	    4. delete magikc files
-	    5. build images
-	    6. run power shell NIG\nicm_master\run\nicm430\restart_gss_agents.ps1
-	    7. activate scheduled task "GSS agent" from task scheduler
+	    1. git pull
+	    2. delete old jars, compile jars
 
 	B - Gears
 	    optional:
 		    * prepare jenkings for shutdown
 		    * shutdown jenkings
 	    1. git pull
-	    2. build
+	    2. delete old jars, compile jars
 	    optional:
 	        * start jenkings
 

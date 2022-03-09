@@ -1,10 +1,10 @@
 package app
 
 import (
-	"fmt"
+	"github.com/fatih/color"
 )
 
 func StartApplication() {
-	fmt.Println("Started NICM Release Automator!")
+	color.Magenta("Started NICM Release Automator!\n")
 	StartInteracting()
 }

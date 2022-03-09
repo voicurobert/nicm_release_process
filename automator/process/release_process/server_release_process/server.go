@@ -8,9 +8,8 @@ import (
 
 const (
 	workingPath       = "C:\\sw\\nicm\\"
-	archiveName       = "nicm_products_server.zip"
-	magikcExtension   = ".magikc"
-	serverArchivePath = "/nicm/"
+	archiveName       = "nicm_products.zip"
+	serverArchivePath = "/home/laur/nicm/"
 )
 
 type serverReleaseProcess struct {
@@ -50,18 +49,16 @@ func getDirsToSkipArchive() []string {
 	return []string{"nicm_night_scripts", "nicm_nig"}
 }
 
-func getImageNames() []string {
-	return []string{"nicm_open", "nicm_closed"}
-}
-
 func (s *serverReleaseProcess) initCommands() {
 	s.commands = []commands.CommandInterface{
-		//commands.NewCommand("delete magikc files", utils.DeleteFiles, s.Options.GetGitPath(), magikcExtension),
-		//commands.NewCommand("execute git pull", utils.ExecuteGitPull, s.Options.GetGitPath()),
-		//commands.NewCommand("build images", utils.BuildImages, s.Options.GetBuildPath(), s.Options.AntCommand),
-		//commands.NewCommand("set writable access", utils.SetWritableAccess, s.Options.GetImagesPath(), getImageNames()),
-		//commands.NewCommand("creating archive", utils.CreateArchive, s.Options.WorkingPath, archiveName, getDirsToArchive(), getDirsToSkipArchive()),
-		commands.NewCommand("move archive to server", utils.MoveArchive, s.Options.WorkingPath, serverArchivePath, archiveName),
+		commands.New("git pull", utils.ExecuteGitPull, s.Options.GetGitPath()),
+		commands.New("build jars", utils.BuildJars, s.Options.GetBuildPath()),
+		commands.New("delete magik files", utils.DeleteFiles, s.Options.GetGitPath(), ".magik"),
+		//commands.New("creating archive", utils.CreateArchive, s.Options.WorkingPath, archiveName, getDirsToArchive(), getDirsToSkipArchive()),
+		//commands.New("move archive to server", utils.MoveArchive, s.Options.WorkingPath+archiveName, serverArchivePath+archiveName),
+		commands.New("delete old archive", utils.DeleteOldArchive, serverArchivePath+"nicm_products_old.zip"),
+		commands.New("rename archive", utils.RenameArchive, serverArchivePath+archiveName, serverArchivePath+"nicm_products_old.zip"),
+		commands.New("unzip archive", utils.Unzip, serverArchivePath+archiveName),
 	}
 }
 

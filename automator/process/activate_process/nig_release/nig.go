@@ -8,12 +8,6 @@ import (
 
 const (
 	workingPath = "C:\\NIG\\"
-	disableTask = "Disable-ScheduledTask"
-	enableTask  = "Enable-ScheduledTask"
-
-	magikcExtension             = ".magikc"
-	restartGSSAgentsScriptNameA = ""
-	restartGSSAgentsScriptNameB = ""
 )
 
 var (
@@ -46,12 +40,8 @@ func (n *nigRelease) initOptions() {
 
 func (n *nigRelease) initCommands() {
 	n.commands = []commands.CommandInterface{
-		commands.NewCommand("disable Scheduled Task", utils.SetScheduledTaskStatus, disableTask),
-		commands.NewCommand("restart GSS agents", utils.RunPowerShellScript, n.Options.GetBuildPath()+restartGSSAgentsScriptNameA),
-		commands.NewCommand("execute git pull", utils.ExecuteGitPull, n.Options.GetGitPath()),
-		commands.NewCommand("delete magikc files", utils.DeleteFiles, n.Options.GetGitPath(), magikcExtension),
-		commands.NewCommand("restart GSS agents", utils.RunPowerShellScript, n.Options.GetBuildPath()+restartGSSAgentsScriptNameA),
-		commands.NewCommand("disable Scheduled Task", utils.SetScheduledTaskStatus, enableTask),
+		commands.New("git pull", utils.ExecuteGitPull, n.Options.GetGitPath()),
+		commands.New("build jars", utils.BuildJars, n.Options.GetBuildPath()),
 	}
 }
 
