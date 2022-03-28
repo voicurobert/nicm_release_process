@@ -41,7 +41,7 @@ func (c *clientReleaseProcess) initOptions() {
 	c.Options = options.New(workingPath)
 }
 
-func (c *clientReleaseProcess) getDirsToArchive() []string {
+func (c *clientReleaseProcess) dirsToArchive() []string {
 	return []string{c.Options.GitPath}
 }
 
@@ -50,8 +50,7 @@ func (c *clientReleaseProcess) initCommands() {
 	c.commands = []commands.CommandInterface{
 		commands.New("git pull", utils.ExecuteGitPull, c.Options.GetGitPath()),
 		commands.New("build jars", utils.BuildJars, c.Options.GetBuildPath()),
-		commands.New("delete magik files", utils.DeleteFiles, c.Options.GetGitPath(), magikExtension),
-		commands.New("creating archive", utils.CreateArchive, c.Options.WorkingPath, archiveName, c.getDirsToArchive()),
+		commands.New("creating archive", utils.CreateArchive, c.Options.WorkingPath, archiveName, c.dirsToArchive()),
 	}
 }
 

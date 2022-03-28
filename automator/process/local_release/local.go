@@ -12,13 +12,10 @@ type localReleaseProcess struct {
 }
 
 const (
-	workingPath       = "C:\\sw\\smallworld529\\"
+	workingPath       = "C:\\sw\\nicm\\nicm_529\\"
 	clientArchiveName = "nicm_products_client.zip"
 	serverArchiveName = "nicm_products_server.zip"
-	magikcExtension   = ".magikc"
 	magikExtension    = ".magik"
-	disableTask       = "true"
-	enableTask        = "false"
 )
 
 var (
@@ -44,11 +41,11 @@ func (l *localReleaseProcess) initOptions() {
 	l.Options = options.New(workingPath)
 }
 
-func getClientDirsToArchive() []string {
-	return []string{"nicm\\"}
+func (l *localReleaseProcess) getClientDirsToArchive() []string {
+	return []string{l.Options.GitPath}
 }
 
-func getServerDirsToArchive() []string {
+func (l *localReleaseProcess) getServerDirsToArchive() []string {
 	return []string{
 		"nicm_master\\nicm_products\\",
 		"nicm_master\\dynamic_patches",
@@ -56,18 +53,11 @@ func getServerDirsToArchive() []string {
 	}
 }
 
-func getSkippedDirsFromArchive() []string {
-	return []string{"nicm_night_scripts", "nicm_nig"}
-}
-
 func (l *localReleaseProcess) initCommands() {
 	l.commands = []commands.CommandInterface{
-		commands.New("execute git pull", utils.ExecuteGitPull, l.Options.GetGitPath()),
-		commands.New("delete magikc files", utils.DeleteFiles, l.Options.GetGitPath(), magikcExtension),
-		commands.New("delete jars", utils.DeleteJars, l.Options.GetBuildPath()),
-		commands.New("compile jars", utils.CompileJars, l.Options.GetBuildPath()),
-		commands.New("delete magik files", utils.DeleteFiles, l.Options.GetGitPath(), magikExtension),
-		commands.New("creating archive", utils.CreateArchive, l.Options.WorkingPath, clientArchiveName, getClientDirsToArchive()),
+		//commands.New("execute git pull", utils.ExecuteGitPull, l.Options.GetGitPath()),
+		//commands.New("build jars", utils.BuildJars, l.Options.GetBuildPath()),
+		commands.New("creating archive", utils.CreateArchive, l.Options.WorkingPath, clientArchiveName, l.getClientDirsToArchive()),
 	}
 }
 

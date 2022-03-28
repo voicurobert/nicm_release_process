@@ -4,16 +4,13 @@
 I. Prepare release
 
     A - NIG Client
-        2. git pull
-        3. build all nicm images
-        4. remove .magik files
-        5. create client archive from nicm_products; remove dirs:nicm_munit, nicm_nig, nicm_nig_resources, nicm_nig_web, nicm_night_scripts, nicm_probe, nicm_upgrade_framework,
+        1. git pull
+        2. build all nicm images
+        3. create client archive from nicm_products and skip magik files; remove dirs:nicm_munit, nicm_nig, nicm_nig_resources, nicm_nig_web, nicm_night_scripts, nicm_probe, nicm_upgrade_framework,
         
     B - Server node1932 172.18.49.25 (dsnicm|aergistal), will connect with user and password
-	    1. Client steps from 1-4 are the same
-	    2. create archive from nicm_products but
-	        * remove remove dirs: nicm_munit, nicm_nig, nicm_nig_resources, nicm_nig_web, nicm_night_scripts, nicm_probe, nicm_upgrade_framework,
-	        * add dynamic_patches and diagnostics_mysql_151, from externals dir
+	    1. Client steps from 1-3 are the same
+	    2. create archive from nicm_products but add dynamic_patches and diagnostics_mysql_151, from externals dir
 	    2. using scp, copy archive in /nicm/ disk location
 
         172.16.10.207

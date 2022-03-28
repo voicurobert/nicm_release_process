@@ -5,6 +5,7 @@ import (
 	"github.com/fatih/color"
 	"github.com/voicurobert/nicm_release_process/automator/process/activate_process/gears"
 	"github.com/voicurobert/nicm_release_process/automator/process/activate_process/nig_release"
+	"github.com/voicurobert/nicm_release_process/automator/process/deploy/oro"
 	local "github.com/voicurobert/nicm_release_process/automator/process/local_release"
 	"github.com/voicurobert/nicm_release_process/automator/process/options"
 	"github.com/voicurobert/nicm_release_process/automator/process/release_process/client_release_process"
@@ -21,6 +22,7 @@ const (
 	LocalReleaseProcess    = "local_release"
 	ServerReleaseProcess   = "server_release"
 	ActivateReleaseProcess = "activate_release"
+	DeployDTS              = "deploy_dts"
 	NIGReleaseProcess      = "nig_release"
 	GearsReleaseProcess    = "gears_release"
 	PreviousProcess        = "back"
@@ -65,6 +67,7 @@ func init() {
 	initPrepareReleaseProcess()
 	initActivateReleaseProcess()
 	initLocalReleaseProcess()
+	initDeployDTSProcess()
 }
 
 func initLocalReleaseProcess() {
@@ -107,6 +110,34 @@ func initClientReleaseProcess(releaseProcess UserInteractionInterface) {
 	clientReleaseProcess.setNextInteraction(PrintCommands, releaseProcess)
 	initOptionsProcess(&clientReleaseProcess)
 	initDefaultProcesses(&clientReleaseProcess, releaseProcess)
+}
+
+func initDeployDTSProcess() {
+	prepareReleaseProcess := userInteraction{Name: PrepareReleaseProcess}
+
+	MainInteraction.setNextInteraction(PrepareReleaseProcess, &prepareReleaseProcess)
+
+	initOroDtsDeployProcess(&prepareReleaseProcess)
+	initRweeDtsDeployProcess(&prepareReleaseProcess)
+
+	initDefaultProcesses(&prepareReleaseProcess, MainInteraction)
+
+}
+
+func initOroDtsDeployProcess(releaseProcess UserInteractionInterface) {
+	oroDtsReleaseProcess := userInteraction{Name: DeployDTS, releaseProcess: oro.ReleaseProcess}
+	releaseProcess.setNextInteraction(ClientReleaseProcess, &oroDtsReleaseProcess)
+
+	oroDtsReleaseProcess.releaseProcess.Init()
+
+	executeClientProcess := userInteraction{Name: ExecuteProcess}
+	oroDtsReleaseProcess.setNextInteraction(ExecuteProcess, &executeClientProcess)
+	oroDtsReleaseProcess.setNextInteraction(PrintCommands, releaseProcess)
+	initOptionsProcess(&oroDtsReleaseProcess)
+}
+
+func initRweeDtsDeployProcess(releaseProcess UserInteractionInterface) {
+
 }
 
 func initOptionsProcess(process UserInteractionInterface) {

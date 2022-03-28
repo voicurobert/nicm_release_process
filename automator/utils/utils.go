@@ -22,7 +22,20 @@ var (
 		"nicm_dts_image",
 		"nicm_register_web_services",
 		"run",
-		"run5"}
+		"run5",
+	}
+
+	skipDirs = []string{
+		".git",
+		"nicm_munit",
+		"nicm_nig",
+		"nicm_nig_resources",
+		"nicm_nig_web",
+		"nicm_probe",
+		"nicm_upgrade_framework",
+		"nicm_night_scripts",
+		"nicm_nig",
+	}
 )
 
 func DeleteFiles(args ...interface{}) error {
@@ -110,7 +123,6 @@ func runPowerShellCommand(args ...string) error {
 }
 
 func executeCommand(command string, args ...string) error {
-	fmt.Println(args)
 	cmd := exec.Command(command, args...)
 	cmdReader, err := cmd.StdoutPipe()
 	if err != nil {
@@ -140,11 +152,6 @@ func CreateArchive(args ...interface{}) error {
 	path := args[0].(string)
 	outName := args[1].(string)
 	dirsToArchive := args[2].([]string)
-	var skippedDirsFromArchive = make([]string, 0)
-	if len(args) > 3 {
-		skippedDirsFromArchive = args[3].([]string)
-	}
-
 	err := os.Chdir(path)
 	if err != nil {
 		color.Red("error changing dir %s: \n", err)
@@ -155,24 +162,13 @@ func CreateArchive(args ...interface{}) error {
 		color.Red(err.Error())
 		return err
 	}
-	defer func(outFile *os.File) {
-		err := outFile.Close()
-		if err != nil {
-
-		}
-	}(outFile)
+	defer outFile.Close()
 
 	archive := zip.NewWriter(outFile)
+	defer archive.Close()
 
-	defer func(archive *zip.Writer) {
-		err := archive.Close()
-		if err != nil {
-
-		}
-	}(archive)
-
-	for _, path := range dirsToArchive {
-		err := addFiles(archive, path, skippedDirsFromArchive)
+	for _, subDir := range dirsToArchive {
+		err := addFiles(archive, subDir, skipDirs)
 		if err != nil {
 			return err
 		}
@@ -181,27 +177,11 @@ func CreateArchive(args ...interface{}) error {
 }
 
 func addFiles(w *zip.Writer, rootDir string, dirsToSkip []string) error {
-	info, err := os.Stat(rootDir)
-	if err != nil {
-		return err
-	}
-
-	var baseDir string
-	if info.IsDir() {
-		baseDir = filepath.Base(rootDir)
-	}
-
-	err = filepath.Walk(rootDir, func(path string, info os.FileInfo, err error) error {
+	err := filepath.Walk(rootDir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
-		header, err := zip.FileInfoHeader(info)
-		if err != nil {
-			return err
-		}
-		if baseDir != "" {
-			header.Name = filepath.Join(baseDir, strings.TrimPrefix(path, rootDir))
-		}
+
 		if info.IsDir() {
 			if isSkippedDir(info.Name(), dirsToSkip) {
 				return filepath.SkipDir
@@ -209,29 +189,27 @@ func addFiles(w *zip.Writer, rootDir string, dirsToSkip []string) error {
 			if strings.Contains(info.Name(), ".git") {
 				return filepath.SkipDir
 			}
-			header.Name += "/"
-		} else {
-			header.Method = zip.Deflate
-		}
-		writer, err := w.CreateHeader(header)
-		if err != nil {
-			return err
-		}
-		if info.IsDir() {
 			return nil
 		}
-		file, err := os.Open(path)
+
+		path = strings.TrimPrefix(path, rootDir+"/")
+		if strings.HasSuffix(path, ".magik") {
+			return nil
+		}
+		f, err := w.Create(path)
 		if err != nil {
 			return err
 		}
-		defer func(file *os.File) {
-			err := file.Close()
-			if err != nil {
+		file, err := os.Open(path)
 
-			}
-		}(file)
-		_, err = io.Copy(writer, file)
+		if err != nil {
+			return err
+		}
+		defer file.Close()
+
+		_, err = io.Copy(f, file)
 		return err
+
 	})
 	if err != nil {
 		return err
@@ -345,6 +323,31 @@ func BuildImage(args ...interface{}) error {
 	defer client.Close()
 	_, err = client.Exec(fmt.Sprintf("run .sh from %s ", shellBatPath))
 
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func RunRemoteCommands(args ...interface{}) error {
+
+	screenName := args[0]
+
+	var client *simplessh.Client
+	var err error
+
+	if client, err = simplessh.ConnectWithPassword(host, username, password); err != nil {
+		return err
+	}
+	defer client.Close()
+
+	_, err = client.Exec(fmt.Sprintf("screen -DmS %s quit()", screenName))
+	if err != nil {
+		return err
+	}
+
+	_, err = client.Exec(fmt.Sprintf("screen -DmS %s start ....", screenName))
 	if err != nil {
 		return err
 	}
