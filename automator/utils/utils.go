@@ -236,7 +236,7 @@ func skipDirsFromMagikFiles(path string) bool {
 		"nicm_products\\nicm_build",
 		"nicm_products\\nicm\\source\\release_patches",
 		"nicm_products\\nicm\\hotfixes",
-		"nicm_products\\rwee_extensions",
+		"nicm_products\\rwee_extensions\\hotfixes",
 		"nicm\\dynamic_patches"}
 
 	for _, name := range names {
