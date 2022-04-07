@@ -51,7 +51,7 @@ func serverDirsToArchive() []string {
 
 func NewServer() ProcessInterface {
 	opts := options.NewOptionsWithConfigName("server_release")
-	cmds := []commands.CommandInterface{
+	list := []commands.CommandInterface{
 		commands.New("git pull", utils.ExecuteGitPull, opts.GetGitPath()),
 		commands.New("build jars", utils.BuildJars, opts.GetBuildPath()),
 		commands.New("creating archive", utils.CreateArchive, opts.WorkingPath, serverArchiveName, serverDirsToArchive()),
@@ -63,38 +63,38 @@ func NewServer() ProcessInterface {
 		commands.New("start job server (lni.server)", utils.StartJobServerForScreenName, "lni.server"),
 	}
 
-	return newProcess(opts, cmds)
+	return newProcess(opts, list)
 }
 
 func NewClient() ProcessInterface {
 	opts := options.NewOptionsWithConfigName("client_release")
 
-	cmds := []commands.CommandInterface{
+	list := []commands.CommandInterface{
 		commands.New("git pull", utils.ExecuteGitPull, opts.GetGitPath()),
 		commands.New("build jars", utils.BuildJars, opts.GetBuildPath()),
 		commands.New("creating archive", utils.CreateArchive, opts.WorkingPath, archiveName, []string{opts.GitPath}),
 	}
 
-	return newProcess(opts, cmds)
+	return newProcess(opts, list)
 }
 
 func NewNIG() ProcessInterface {
 	opts := options.NewOptionsWithConfigName("nig")
 
-	cmds := []commands.CommandInterface{
+	list := []commands.CommandInterface{
 		commands.New("git pull", utils.ExecuteGitPull, opts.GetGitPath()),
 		commands.New("build jars", utils.BuildJars, opts.GetBuildPath()),
 	}
 
-	return newProcess(opts, cmds)
+	return newProcess(opts, list)
 }
 
 func NewGears() ProcessInterface {
 	opts := options.NewOptionsWithConfigName("gears")
-	cmds := []commands.CommandInterface{
+	list := []commands.CommandInterface{
 		commands.New("git pull", utils.ExecuteGitPull, opts.GetGitPath()),
 		commands.New("build jars", utils.BuildJars, opts.GetBuildPath()),
 	}
 
-	return newProcess(opts, cmds)
+	return newProcess(opts, list)
 }
