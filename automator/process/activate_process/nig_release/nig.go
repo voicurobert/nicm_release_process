@@ -6,10 +6,6 @@ import (
 	"github.com/voicurobert/nicm_release_process/automator/utils"
 )
 
-const (
-	workingPath = "C:\\NIG\\"
-)
-
 var (
 	ReleaseProcess = &nigRelease{}
 )
@@ -35,7 +31,13 @@ func (n *nigRelease) Init() {
 }
 
 func (n *nigRelease) initOptions() {
-	n.Options = options.New(workingPath)
+	cfgMap := utils.GetConfig()
+	n.Options = options.New()
+
+	clientMap, ok := cfgMap["nig"]
+	if ok {
+		utils.SetOptionPaths(n.Options, clientMap)
+	}
 }
 
 func (n *nigRelease) initCommands() {

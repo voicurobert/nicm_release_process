@@ -6,11 +6,6 @@ import (
 	"github.com/voicurobert/nicm_release_process/automator/utils"
 )
 
-const (
-	workingPath = "C:\\nicm_gears\\"
-	gitPath     = "nicm_modules\\"
-)
-
 var (
 	ReleaseProcess = &gearsRelease{}
 )
@@ -36,8 +31,13 @@ func (g *gearsRelease) Init() {
 }
 
 func (g *gearsRelease) initOptions() {
-	g.Options = options.New(workingPath)
-	g.Options.SetGitPath(gitPath)
+	cfgMap := utils.GetConfig()
+	g.Options = options.New()
+
+	clientMap, ok := cfgMap["gears"]
+	if ok {
+		utils.SetOptionPaths(g.Options, clientMap)
+	}
 }
 
 func (g *gearsRelease) initCommands() {

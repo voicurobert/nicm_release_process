@@ -38,7 +38,7 @@ func (l *localReleaseProcess) Init() {
 }
 
 func (l *localReleaseProcess) initOptions() {
-	l.Options = options.New(workingPath)
+	l.Options = options.New()
 }
 
 func (l *localReleaseProcess) getClientDirsToArchive() []string {

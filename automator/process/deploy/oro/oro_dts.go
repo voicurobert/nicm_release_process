@@ -38,7 +38,7 @@ func (d *oroDtsDeployProcess) Init() {
 }
 
 func (d *oroDtsDeployProcess) initOptions() {
-	d.Options = options.New(workingPath)
+	d.Options = options.New()
 }
 
 func (d *oroDtsDeployProcess) dirsToArchive() []string {

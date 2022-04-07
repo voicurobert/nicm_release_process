@@ -29,10 +29,10 @@ type Options struct {
 	BuildPath   string
 }
 
-func New(workingPath string) *Options {
+func New() *Options {
 	return &Options{
-		WorkingPath: workingPath,
-		GitPath:     gitPath,
+		WorkingPath: "",
+		GitPath:     "",
 		BuildPath:   buildPath,
 	}
 }

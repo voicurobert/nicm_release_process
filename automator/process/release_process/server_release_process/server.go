@@ -7,7 +7,6 @@ import (
 )
 
 const (
-	workingPath       = "C:\\sw\\nicm\\"
 	archiveName       = "nicm_products.zip"
 	serverArchivePath = "/home/laur/nicm/"
 )
@@ -38,7 +37,13 @@ func (s *serverReleaseProcess) Init() {
 }
 
 func (s *serverReleaseProcess) initOptions() {
-	s.Options = options.New(workingPath)
+	cfgMap := utils.GetConfig()
+	s.Options = options.New()
+
+	clientMap, ok := cfgMap["server_release"]
+	if ok {
+		utils.SetOptionPaths(s.Options, clientMap)
+	}
 }
 
 func dirsToArchive() []string {

@@ -12,10 +12,7 @@ type clientReleaseProcess struct {
 }
 
 const (
-	//workingPath     = "C:\\NIG\\"
-	workingPath    = "C:\\sw\\nicm\\nicm_529\\"
-	archiveName    = "nicm.zip"
-	magikExtension = ".magik"
+	archiveName = "nicm.zip"
 )
 
 var (
@@ -38,7 +35,13 @@ func (c *clientReleaseProcess) Init() {
 }
 
 func (c *clientReleaseProcess) initOptions() {
-	c.Options = options.New(workingPath)
+	cfgMap := utils.GetConfig()
+	c.Options = options.New()
+
+	clientMap, ok := cfgMap["client_release"]
+	if ok {
+		utils.SetOptionPaths(c.Options, clientMap)
+	}
 }
 
 func (c *clientReleaseProcess) dirsToArchive() []string {
@@ -48,8 +51,8 @@ func (c *clientReleaseProcess) dirsToArchive() []string {
 func (c *clientReleaseProcess) initCommands() {
 	c.commands = nil
 	c.commands = []commands.CommandInterface{
-		commands.New("git pull", utils.ExecuteGitPull, c.Options.GetGitPath()),
-		commands.New("build jars", utils.BuildJars, c.Options.GetBuildPath()),
+		//commands.New("git pull", utils.ExecuteGitPull, c.Options.GetGitPath()),
+		//commands.New("build jars", utils.BuildJars, c.Options.GetBuildPath()),
 		commands.New("creating archive", utils.CreateArchive, c.Options.WorkingPath, archiveName, c.dirsToArchive()),
 	}
 }

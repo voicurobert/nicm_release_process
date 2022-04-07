@@ -4,12 +4,15 @@ import (
 	"archive/zip"
 	"bufio"
 	"fmt"
+	"github.com/bigkevmcd/go-configparser"
 	"github.com/fatih/color"
 	"github.com/sfreiberg/simplessh"
+	"github.com/voicurobert/nicm_release_process/automator/process/options"
 	"io"
 	"io/fs"
 	"os"
 	"os/exec"
+	"path"
 	"path/filepath"
 	"strings"
 )
@@ -18,6 +21,7 @@ var (
 	skipRemovedDirs = []string{
 		"release_patches",
 		"dynamic_patches",
+		"hotfixes",
 		"config",
 		"nicm_dts_image",
 		"nicm_register_web_services",
@@ -27,6 +31,7 @@ var (
 
 	skipDirs = []string{
 		".git",
+		"build_nicm_linux",
 		"nicm_munit",
 		"nicm_nig",
 		"nicm_nig_resources",
@@ -66,31 +71,9 @@ func ExecuteGitPull(args ...interface{}) error {
 	return executeCommand("cmd.exe", "/C", "git pull")
 }
 
-func DeleteJars(args ...interface{}) error {
-	path := args[0].(string)
-	err := os.Chdir(path)
-	if err != nil {
-		return err
-	}
-	return executeCommand("cmd.exe", "/C", path+"delete_compiled_nicm.bat")
-}
-
-func CompileJars(args ...interface{}) error {
-	path := args[0].(string)
-	err := os.Chdir(path)
-	if err != nil {
-		return err
-	}
-	return executeCommand("cmd.exe", "/C", path+"start_compile_all.bat")
-}
-
 func BuildJars(args ...interface{}) error {
 	path := args[0].(string)
 	err := os.Chdir(path)
-	if err != nil {
-		return err
-	}
-	err = executeCommand("cmd.exe", "/C", path+"delete_compiled_nicm.bat")
 	if err != nil {
 		return err
 	}
@@ -124,6 +107,7 @@ func runPowerShellCommand(args ...string) error {
 
 func executeCommand(command string, args ...string) error {
 	cmd := exec.Command(command, args...)
+
 	cmdReader, err := cmd.StdoutPipe()
 	if err != nil {
 		_, _ = fmt.Fprintln(os.Stderr, "Error creating StdoutPipe for Cmd", err)
@@ -135,6 +119,20 @@ func executeCommand(command string, args ...string) error {
 			color.Yellow("\t > %s\n", scanner.Text())
 		}
 	}()
+
+	cmdErr, err := cmd.StderrPipe()
+	if err != nil {
+		_, _ = fmt.Fprintln(os.Stderr, "Error creating StderrPipe for Cmd", err)
+		return err
+	}
+
+	errScanner := bufio.NewScanner(cmdErr)
+	go func() {
+		for errScanner.Scan() {
+			color.Red("\t > %s\n", errScanner.Text())
+		}
+	}()
+
 	err = cmd.Start()
 	if err != nil {
 		_, _ = fmt.Fprintln(os.Stderr, "Error starting Cmd", err)
@@ -193,8 +191,11 @@ func addFiles(w *zip.Writer, rootDir string, dirsToSkip []string) error {
 		}
 
 		path = strings.TrimPrefix(path, rootDir+"/")
+
 		if strings.HasSuffix(path, ".magik") {
-			return nil
+			if !skipDirsFromMagikFiles(path) {
+				return nil
+			}
 		}
 		f, err := w.Create(path)
 		if err != nil {
@@ -226,6 +227,24 @@ func isSkippedDir(dirName string, dirsToSkip []string) bool {
 			return true
 		}
 	}
+	return false
+}
+
+func skipDirsFromMagikFiles(path string) bool {
+	names := []string{
+		"nicm_products\\nicm\\config",
+		"nicm_products\\nicm_build",
+		"nicm_products\\nicm\\source\\release_patches",
+		"nicm_products\\nicm\\hotfixes",
+		"nicm_products\\rwee_extensions",
+		"nicm\\dynamic_patches"}
+
+	for _, name := range names {
+		if strings.Contains(path, name) {
+			return true
+		}
+	}
+
 	return false
 }
 
@@ -353,4 +372,37 @@ func RunRemoteCommands(args ...interface{}) error {
 	}
 
 	return nil
+}
+
+type ConfigMap map[string]map[string]string
+
+func getConfigPath() string {
+	dir, _ := os.Getwd()
+	return path.Join(dir, "nicm_paths.config")
+}
+
+func GetConfig() ConfigMap {
+	configFilePath := getConfigPath()
+	config, err := configparser.NewConfigParserFromFile(configFilePath)
+	if err != nil {
+		panic(fmt.Sprintf("cannot read config file %s, error: %s", configFilePath, err.Error()))
+	}
+
+	configMap := make(ConfigMap)
+
+	for _, section := range config.Sections() {
+		keyValue, _ := config.Items(section)
+		configMap[section] = keyValue
+	}
+
+	return configMap
+}
+
+func SetOptionPaths(options *options.Options, cfgMap map[string]string) {
+	if gitPath, ok := cfgMap["git_path"]; ok {
+		options.SetGitPath(strings.TrimSpace(gitPath))
+	}
+	if workingPath, ok := cfgMap["working_path"]; ok {
+		options.SetWorkingPath(strings.TrimSpace(workingPath))
+	}
 }

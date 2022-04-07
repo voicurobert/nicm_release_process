@@ -67,7 +67,7 @@ func init() {
 	initPrepareReleaseProcess()
 	initActivateReleaseProcess()
 	initLocalReleaseProcess()
-	initDeployDTSProcess()
+	//initDeployDTSProcess()
 }
 
 func initLocalReleaseProcess() {
