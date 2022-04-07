@@ -51,8 +51,8 @@ func (c *clientReleaseProcess) dirsToArchive() []string {
 func (c *clientReleaseProcess) initCommands() {
 	c.commands = nil
 	c.commands = []commands.CommandInterface{
-		//commands.New("git pull", utils.ExecuteGitPull, c.Options.GetGitPath()),
-		//commands.New("build jars", utils.BuildJars, c.Options.GetBuildPath()),
+		commands.New("git pull", utils.ExecuteGitPull, c.Options.GetGitPath()),
+		commands.New("build jars", utils.BuildJars, c.Options.GetBuildPath()),
 		commands.New("creating archive", utils.CreateArchive, c.Options.WorkingPath, archiveName, c.dirsToArchive()),
 	}
 }
