@@ -4,15 +4,13 @@ import (
 	"archive/zip"
 	"bufio"
 	"fmt"
-	"github.com/bigkevmcd/go-configparser"
 	"github.com/fatih/color"
 	"github.com/sfreiberg/simplessh"
-	"github.com/voicurobert/nicm_release_process/automator/process/options"
+	"github.com/voicurobert/nicm_release_process/automator/config"
 	"io"
 	"io/fs"
 	"os"
 	"os/exec"
-	"path"
 	"path/filepath"
 	"strings"
 )
@@ -82,14 +80,6 @@ func BuildJars(args ...interface{}) error {
 		return err
 	}
 	return nil
-}
-
-func SetScheduledTaskStatus(args ...interface{}) error {
-	taskCommand := args[0].(string)
-	disableTaskArgs := []string{"-NoProfile", "-NonInteractive"}
-	disableTaskArgs = append(disableTaskArgs, taskCommand)
-	disableTaskArgs = append(disableTaskArgs, "-TaskPath", "\"\\NICM\\\"", "-TaskName", "\"Test\"")
-	return runPowerShellCommand(disableTaskArgs...)
 }
 
 func RunPowerShellScript(args ...interface{}) error {
@@ -248,12 +238,6 @@ func skipDirsFromMagikFiles(path string) bool {
 	return false
 }
 
-const (
-	host     = "172.16.10.207"
-	username = "laur"
-	password = ""
-)
-
 func MoveArchive(args ...interface{}) error {
 	sourcePath := args[0].(string)
 	destPath := args[1].(string)
@@ -261,10 +245,12 @@ func MoveArchive(args ...interface{}) error {
 	var client *simplessh.Client
 	var err error
 
+	host, username, password := config.GetCredentials()
 	if client, err = simplessh.ConnectWithPassword(host, username, password); err != nil {
 		return err
 	}
 	defer client.Close()
+
 	err = client.Upload(sourcePath, destPath)
 	if err != nil {
 		return err
@@ -279,6 +265,7 @@ func RenameArchive(args ...interface{}) error {
 	var client *simplessh.Client
 	var err error
 
+	host, username, password := config.GetCredentials()
 	if client, err = simplessh.ConnectWithPassword(host, username, password); err != nil {
 		return err
 	}
@@ -298,6 +285,7 @@ func DeleteOldArchive(args ...interface{}) error {
 	var client *simplessh.Client
 	var err error
 
+	host, username, password := config.GetCredentials()
 	if client, err = simplessh.ConnectWithPassword(host, username, password); err != nil {
 		return err
 	}
@@ -317,6 +305,7 @@ func Unzip(args ...interface{}) error {
 	var client *simplessh.Client
 	var err error
 
+	host, username, password := config.GetCredentials()
 	if client, err = simplessh.ConnectWithPassword(host, username, password); err != nil {
 		return err
 	}
@@ -336,6 +325,7 @@ func BuildImage(args ...interface{}) error {
 	var client *simplessh.Client
 	var err error
 
+	host, username, password := config.GetCredentials()
 	if client, err = simplessh.ConnectWithPassword(host, username, password); err != nil {
 		return err
 	}
@@ -349,13 +339,38 @@ func BuildImage(args ...interface{}) error {
 	return nil
 }
 
-func RunRemoteCommands(args ...interface{}) error {
+func StartJobServerForScreenName(args ...interface{}) error {
+	screenName := args[0].(string)
+	return RunRemoteCommands2(screenName, []string{"quit()", "start ...."})
+}
 
+func RunRemoteCommands2(screenName string, commands []string) error {
+	var client *simplessh.Client
+	var err error
+
+	host, username, password := config.GetCredentials()
+	if client, err = simplessh.ConnectWithPassword(host, username, password); err != nil {
+		return err
+	}
+	defer client.Close()
+
+	for _, cmd := range commands {
+		_, err = client.Exec(fmt.Sprintf("screen -DmS %s %s", screenName, cmd))
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func RunRemoteCommands(args ...interface{}) error {
 	screenName := args[0]
 
 	var client *simplessh.Client
 	var err error
 
+	host, username, password := config.GetCredentials()
 	if client, err = simplessh.ConnectWithPassword(host, username, password); err != nil {
 		return err
 	}
@@ -372,37 +387,4 @@ func RunRemoteCommands(args ...interface{}) error {
 	}
 
 	return nil
-}
-
-type ConfigMap map[string]map[string]string
-
-func getConfigPath() string {
-	dir, _ := os.Getwd()
-	return path.Join(dir, "nicm_paths.config")
-}
-
-func GetConfig() ConfigMap {
-	configFilePath := getConfigPath()
-	config, err := configparser.NewConfigParserFromFile(configFilePath)
-	if err != nil {
-		panic(fmt.Sprintf("cannot read config file %s, error: %s", configFilePath, err.Error()))
-	}
-
-	configMap := make(ConfigMap)
-
-	for _, section := range config.Sections() {
-		keyValue, _ := config.Items(section)
-		configMap[section] = keyValue
-	}
-
-	return configMap
-}
-
-func SetOptionPaths(options *options.Options, cfgMap map[string]string) {
-	if gitPath, ok := cfgMap["git_path"]; ok {
-		options.SetGitPath(strings.TrimSpace(gitPath))
-	}
-	if workingPath, ok := cfgMap["working_path"]; ok {
-		options.SetWorkingPath(strings.TrimSpace(workingPath))
-	}
 }

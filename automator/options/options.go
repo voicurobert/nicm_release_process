@@ -1,32 +1,37 @@
 package options
 
 import (
-	"github.com/fatih/color"
-	"reflect"
+	"github.com/voicurobert/nicm_release_process/automator/config"
 	"strings"
 )
 
 const (
-	PrintOptions   = "print_options"
-	SetOptions     = "set_options"
-	SetWorkingPath = "set_working_path"
-	SetGitPath     = "set_git_path"
-
-	SetOptionSeparator = "="
-
-	gitPath   = "nicm\\"
 	buildPath = "run5\\nicm\\"
 )
-
-type SetOptionsInterface interface {
-	SetWorkingPath(path string)
-	SetGitPath(path string)
-}
 
 type Options struct {
 	WorkingPath string
 	GitPath     string
 	BuildPath   string
+}
+
+func NewOptionsWithConfigName(cfgName string) *Options {
+	opts := New()
+	cfgMap := config.GetConfig()
+	clientMap, ok := cfgMap[cfgName]
+	if ok {
+		setPaths(opts, clientMap)
+	}
+	return opts
+}
+
+func setPaths(options *Options, cfgMap map[string]string) {
+	if path, ok := cfgMap["git_path"]; ok {
+		options.SetGitPath(strings.TrimSpace(path))
+	}
+	if path, ok := cfgMap["working_path"]; ok {
+		options.SetWorkingPath(strings.TrimSpace(path))
+	}
 }
 
 func New() *Options {
@@ -57,14 +62,4 @@ func (o *Options) GetBuildPath() string {
 	sb.WriteString(o.GetGitPath())
 	sb.WriteString(o.BuildPath)
 	return sb.String()
-}
-
-func (o *Options) Print(tabs int) {
-	tabChars := strings.Repeat(" ", tabs)
-	attrs := reflect.ValueOf(o).Elem()
-	for i := 0; i < attrs.NumField(); i++ {
-		name := attrs.Type().Field(i).Name
-		value := attrs.Field(i).Interface()
-		color.Yellow("%s%s -> %s \n", tabChars, name, value)
-	}
 }

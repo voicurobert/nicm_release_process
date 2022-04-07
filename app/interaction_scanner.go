@@ -2,18 +2,15 @@ package app
 
 import (
 	"bufio"
-	"errors"
-	"fmt"
 	"github.com/fatih/color"
-	"github.com/voicurobert/nicm_release_process/automator/interations"
-	"github.com/voicurobert/nicm_release_process/automator/process/options"
+	"github.com/voicurobert/nicm_release_process/automator"
 	"os"
 	"strings"
 )
 
 var (
 	historyPath        = make([]string, 1)
-	currentInteraction = interations.MainInteraction
+	currentInteraction = automator.MainInteraction
 )
 
 func StartInteracting() {
@@ -28,33 +25,35 @@ func StartInteracting() {
 			spaces += len(path)
 		}
 
-		if text == interations.HelpCommandText {
-			handleHelpCommand(spaces)
-			continue
-		}
-		if text == interations.ExitCommandText {
-			os.Exit(1)
-		}
-		if strings.Contains(text, "release") || text == options.SetOptions {
+		if strings.Contains(text, "release") {
 			handleNewCommand(text)
 			continue
 		}
-		if text == interations.PreviousProcess {
+
+		if text == automator.HelpCommandText {
+			handleHelpCommand(spaces)
+			continue
+		}
+
+		if text == automator.ExitCommandText {
+			os.Exit(1)
+		}
+
+		if text == automator.PreviousProcess {
 			handlePreviousCommand(text)
 			continue
 		}
-		if text == interations.ExecuteProcess {
+
+		if text == automator.ExecuteProcess {
 			handleExecuteCommand()
 			continue
 		}
-		if text == interations.PrintCommands {
+
+		if text == automator.PrintCommands {
 			currentInteraction.PrintCommands(spaces)
 			continue
 		}
-		if text == options.PrintOptions {
-			currentInteraction.PrintOptions(spaces)
-			continue
-		}
+
 		handleDefaultCommand(text)
 	}
 }
@@ -79,7 +78,7 @@ func handlePreviousCommand(text string) {
 func handleExecuteCommand() {
 	ok := currentInteraction.Execute()
 	if ok == true {
-		handlePreviousCommand(interations.PreviousProcess)
+		handlePreviousCommand(automator.PreviousProcess)
 	}
 }
 
@@ -88,41 +87,7 @@ func handleHelpCommand(spaces int) {
 }
 
 func handleDefaultCommand(text string) {
-	ok, err := setOption(text)
-	if err != nil {
-		color.Red(err.Error())
-		return
-	}
-	if !ok {
-		color.Red("unknown command...")
-	}
-}
-
-func setOption(text string) (bool, error) {
-	if currentInteraction.GetName() == options.SetOptions {
-		if strings.Contains(text, options.SetOptionSeparator) {
-			vec := strings.Split(text, options.SetOptionSeparator)
-			return true, handleSetOptionsMethod(strings.TrimSpace(vec[0]), strings.TrimSpace(vec[1]))
-		} else {
-			return true, errors.New("separator not allowed, try using '=")
-		}
-	}
-	return false, nil
-}
-
-func handleSetOptionsMethod(option, value string) error {
-	if value == "" {
-		return errors.New("empty value")
-	}
-	if option == options.SetWorkingPath {
-		currentInteraction.SetWorkingPath(value)
-		return nil
-	}
-	if option == options.SetGitPath {
-		currentInteraction.SetGitPath(value)
-		return nil
-	}
-	return errors.New(fmt.Sprintf("unknown option: %s", option))
+	color.Red("unknown command %s...", text)
 }
 
 func addHistory(name string) {
