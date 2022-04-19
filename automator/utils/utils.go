@@ -7,6 +7,7 @@ import (
 	"github.com/fatih/color"
 	"github.com/sfreiberg/simplessh"
 	"github.com/voicurobert/nicm_release_process/automator/config"
+	"github.com/voicurobert/nicm_release_process/automator/options"
 	"io"
 	"io/fs"
 	"os"
@@ -341,25 +342,55 @@ func BuildImage(args ...interface{}) error {
 
 func StartJobServerForScreenName(args ...interface{}) error {
 	screenName := args[0].(string)
-	return RunRemoteCommands2(screenName, []string{"quit()", "start ...."})
+	host, username, password := config.GetCredentials()
+	so := options.ServerOptions{
+		Host:     host,
+		Username: username,
+		Password: password,
+	}
+	return RunRemoteCommands2(so, screenName, []string{"quit()", "start ...."})
 }
 
-func RunRemoteCommands2(screenName string, commands []string) error {
+func TestDTSCommands(args ...interface{}) error {
+	serverOptions := args[0].(options.ServerOptions)
+
+	return RunRemoteCommands2(serverOptions, "", []string{"pwd", "cd /dts/orange.ro/", "pwd"})
+}
+
+func RunRemoteCommands2(so options.ServerOptions, screenName string, commands []string) error {
 	var client *simplessh.Client
 	var err error
 
-	host, username, password := config.GetCredentials()
-	if client, err = simplessh.ConnectWithPassword(host, username, password); err != nil {
+	if client, err = simplessh.ConnectWithPassword(so.Host, so.Username, so.Password); err != nil {
 		return err
 	}
 	defer client.Close()
 
-	for _, cmd := range commands {
-		_, err = client.Exec(fmt.Sprintf("screen -DmS %s %s", screenName, cmd))
-		if err != nil {
-			return err
-		}
+	var command strings.Builder
+
+	if screenName != "" {
+		command.WriteString(screenName)
 	}
+
+	lastIdx := len(commands)
+
+	for idx, cmd := range commands {
+		if idx == 0 {
+			command.WriteString(cmd)
+		} else if idx == lastIdx {
+			command.WriteString(cmd)
+		} else {
+			command.WriteString(" && ")
+			command.WriteString(cmd)
+		}
+		fmt.Println(idx, " -> ", command.String())
+	}
+
+	output, err := client.Exec(command.String())
+	if err != nil {
+		return err
+	}
+	fmt.Println("Server response: ", string(output))
 
 	return nil
 }

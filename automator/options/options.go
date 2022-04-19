@@ -13,6 +13,13 @@ type Options struct {
 	WorkingPath string
 	GitPath     string
 	BuildPath   string
+	Server      *ServerOptions
+}
+
+type ServerOptions struct {
+	Host     string
+	Username string
+	Password string
 }
 
 func NewOptionsWithConfigName(cfgName string) *Options {
@@ -21,6 +28,7 @@ func NewOptionsWithConfigName(cfgName string) *Options {
 	clientMap, ok := cfgMap[cfgName]
 	if ok {
 		setPaths(opts, clientMap)
+		setServerConfig(opts, clientMap)
 	}
 	return opts
 }
@@ -32,6 +40,20 @@ func setPaths(options *Options, cfgMap map[string]string) {
 	if path, ok := cfgMap["working_path"]; ok {
 		options.SetWorkingPath(strings.TrimSpace(path))
 	}
+}
+
+func setServerConfig(options *Options, cfgMap map[string]string) {
+	so := ServerOptions{}
+	if ip, ok := cfgMap["ip"]; ok {
+		so.Host = strings.TrimSpace(ip)
+	}
+	if username, ok := cfgMap["username"]; ok {
+		so.Username = strings.TrimSpace(username)
+	}
+	if password, ok := cfgMap["password"]; ok {
+		so.Password = strings.TrimSpace(password)
+	}
+	options.Server = &so
 }
 
 func New() *Options {
@@ -48,6 +70,10 @@ func (o *Options) SetWorkingPath(path string) {
 
 func (o *Options) SetGitPath(path string) {
 	o.GitPath = path
+}
+
+func (o *Options) GetServerOptions() *ServerOptions {
+	return o.Server
 }
 
 func (o *Options) GetGitPath() string {

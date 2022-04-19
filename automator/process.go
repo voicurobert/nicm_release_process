@@ -66,6 +66,15 @@ func NewServer() ProcessInterface {
 	return newProcess(opts, list)
 }
 
+func NewDTSClujServer() ProcessInterface {
+	opts := options.NewOptionsWithConfigName("dts_cluj_config")
+	list := []commands.CommandInterface{
+		commands.New("test commands", utils.TestDTSCommands, *opts.Server),
+	}
+
+	return newProcess(opts, list)
+}
+
 func NewClient() ProcessInterface {
 	opts := options.NewOptionsWithConfigName("client_release")
 

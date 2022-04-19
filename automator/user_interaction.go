@@ -47,10 +47,11 @@ func init() {
 }
 
 func initProcesses() {
-	initClientReleaseProcess(MainInteraction)
-	initServerReleaseProcess(MainInteraction)
-	initNIGReleaseProcess(MainInteraction)
-	initGearsReleaseProcess(MainInteraction)
+	initClientProcess()
+	initServerProcess()
+	initNIGProcess()
+	initGearsProcess()
+	initDTSProcess()
 }
 
 func initDefaultProcesses(process, next UserInteraction) {
@@ -63,36 +64,44 @@ func initDefaultProcesses(process, next UserInteraction) {
 	process.setNextInteraction(ExitCommandText, next)
 }
 
-func initClientReleaseProcess(releaseProcess UserInteraction) {
+func initClientProcess() {
 	clientReleaseProcess := userInteraction{Name: ClientReleaseProcess, releaseProcess: NewClient()}
 
-	releaseProcess.setNextInteraction(ClientReleaseProcess, &clientReleaseProcess)
+	MainInteraction.setNextInteraction(ClientReleaseProcess, &clientReleaseProcess)
 
-	initDefaultProcesses(&clientReleaseProcess, releaseProcess)
+	initDefaultProcesses(&clientReleaseProcess, MainInteraction)
 }
 
-func initServerReleaseProcess(releaseProcess UserInteraction) {
+func initServerProcess() {
 	serverReleaseProcess := userInteraction{Name: ServerReleaseProcess, releaseProcess: NewServer()}
 
-	releaseProcess.setNextInteraction(ServerReleaseProcess, &serverReleaseProcess)
+	MainInteraction.setNextInteraction(ServerReleaseProcess, &serverReleaseProcess)
 
-	initDefaultProcesses(&serverReleaseProcess, releaseProcess)
+	initDefaultProcesses(&serverReleaseProcess, MainInteraction)
 }
 
-func initNIGReleaseProcess(releaseProcess UserInteraction) {
+func initNIGProcess() {
 	nigReleaseProcess := userInteraction{Name: NIGReleaseProcess, releaseProcess: NewNIG()}
 
-	releaseProcess.setNextInteraction(NIGReleaseProcess, &nigReleaseProcess)
+	MainInteraction.setNextInteraction(NIGReleaseProcess, &nigReleaseProcess)
 
-	initDefaultProcesses(&nigReleaseProcess, releaseProcess)
+	initDefaultProcesses(&nigReleaseProcess, MainInteraction)
 }
 
-func initGearsReleaseProcess(releaseProcess UserInteraction) {
+func initGearsProcess() {
 	gearsReleaseProcess := userInteraction{Name: GearsReleaseProcess, releaseProcess: NewGears()}
 
-	releaseProcess.setNextInteraction(GearsReleaseProcess, &gearsReleaseProcess)
+	MainInteraction.setNextInteraction(GearsReleaseProcess, &gearsReleaseProcess)
 
-	initDefaultProcesses(&gearsReleaseProcess, releaseProcess)
+	initDefaultProcesses(&gearsReleaseProcess, MainInteraction)
+}
+
+func initDTSProcess() {
+	dtsProcess := userInteraction{Name: "dts_release", releaseProcess: NewDTSClujServer()}
+
+	MainInteraction.setNextInteraction("dts_release", &dtsProcess)
+
+	initDefaultProcesses(&dtsProcess, MainInteraction)
 }
 
 func (up *userInteraction) setNextInteraction(command string, nextProcess UserInteraction) {

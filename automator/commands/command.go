@@ -19,10 +19,10 @@ type command struct {
 
 func (c *command) Execute() error {
 	if c.Function != nil {
-		color.Yellow("executing c -> %s\n", c.Name)
+		color.Yellow("executing command -> %s\n", c.Name)
 		err := c.Function(c.Params...)
 		if err != nil {
-			color.Red("error when executing c: %s\n", err.Error())
+			color.Red("error when executing command: %s\n", err.Error())
 			return nil
 		}
 		color.Green("Success!\n")
