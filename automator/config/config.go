@@ -7,21 +7,21 @@ import (
 	"path"
 )
 
-type parameters map[string]map[string]string
+type Parameters map[string]map[string]string
 
 func getConfigPath() string {
 	dir, _ := os.Getwd()
 	return path.Join(dir, "nicm_paths.config")
 }
 
-func GetConfig() parameters {
+func GetConfig() Parameters {
 	configFilePath := getConfigPath()
 	config, err := configparser.NewConfigParserFromFile(configFilePath)
 	if err != nil {
 		panic(fmt.Sprintf("cannot read config file %s, error: %s", configFilePath, err.Error()))
 	}
 
-	configMap := make(parameters)
+	configMap := make(Parameters)
 
 	for _, section := range config.Sections() {
 		keyValue, _ := config.Items(section)

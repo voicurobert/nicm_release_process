@@ -71,17 +71,18 @@ func NewServer() ProcessInterface {
 func NewDTSTestServer() ProcessInterface {
 	opts := options.NewOptionsWithConfigName("dts_test_config")
 
-	//cmds := commands.NewCommandsFromConfig("dts_test_commands")
+	cmds := commands.NewCommandsFromConfig("dts_test_commands")
+	path := opts.WorkingPath + opts.GitPath
 	list := []commands.CommandInterface{
-		//commands.New("git pull", utils.ExecuteGitPull, opts.GetGitPath()),
-		//commands.New("build jars", utils.BuildJars, opts.GetBuildPath()),
-		//commands.New("creating archive", utils.CreateArchive, opts.WorkingPath, serverArchiveName, serverDirsToArchive()),
-		commands.New("rename archive", utils.RenameThing, *opts.Server, dtsTestArchivePath+serverArchiveName, serverArchivePath+"nicm_products_old.zip"),
-		commands.New("move archive to server", utils.MoveArchive, *opts.Server, opts.WorkingPath+serverArchiveName, dtsTestArchivePath+serverArchiveName),
-		commands.New("delete old archive", utils.DeleteThing, *opts.Server, dtsTestArchivePath+"nicm_products_old.zip"),
-		commands.New("delete old release", utils.DeleteThing, *opts.Server, dtsTestArchivePath+"nicm_products"),
+		commands.New("git pull", utils.ExecuteGitPull, opts.GetGitPath()),
+		commands.New("build jars", utils.BuildJars, opts.GetBuildPath()),
+		commands.New("creating archive", utils.CreateArchive, path, serverArchiveName, []string{"nicm_products\\"}),
+		commands.New("delete old nicm_products", utils.DeleteThing, *opts.Server, dtsTestArchivePath+"nicm_products_old"),
+		commands.New("rename nicm_products", utils.RenameThing, *opts.Server, dtsTestArchivePath+"nicm_products", serverArchivePath+"nicm_products_old"),
+		commands.New("delete old archive", utils.DeleteThing, *opts.Server, dtsTestArchivePath+"nicm_products.zip"),
+		commands.New("move archive to server", utils.MoveArchive, *opts.Server, path+serverArchiveName, dtsTestArchivePath+serverArchiveName),
 		commands.New("unzip archive", utils.Unzip, *opts.Server, dtsTestArchivePath+serverArchiveName),
-		//commands.New("test commands", utils.RunDTSCommands, *opts.Server, cmds),
+		commands.New("test commands", utils.RunDTSCommands, *opts.Server, cmds),
 	}
 	return newProcess(opts, list)
 }

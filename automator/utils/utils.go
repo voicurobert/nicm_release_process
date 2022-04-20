@@ -141,6 +141,7 @@ func CreateArchive(args ...interface{}) error {
 	path := args[0].(string)
 	outName := args[1].(string)
 	dirsToArchive := args[2].([]string)
+	fmt.Println(path)
 	err := os.Chdir(path)
 	if err != nil {
 		color.Red("error changing dir %s: \n", err)
