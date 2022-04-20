@@ -40,9 +40,11 @@ func (r *process) PrintCommands(tabs int) {
 }
 
 const (
-	archiveName       = "nicm.zip"
-	serverArchiveName = "nicm_products.zip"
-	serverArchivePath = "/home/laur/nicm/"
+	archiveName        = "nicm.zip"
+	serverArchiveName  = "nicm_products_new.zip"
+	serverArchivePath  = "/home/laur/nicm/"
+	dtsTestArchivePath = "/dts/sw529/nicm/"
+	dtsProdArchivePath = "/dts/sw529/nicm/"
 )
 
 func serverDirsToArchive() []string {
@@ -55,19 +57,37 @@ func NewServer() ProcessInterface {
 		commands.New("git pull", utils.ExecuteGitPull, opts.GetGitPath()),
 		commands.New("build jars", utils.BuildJars, opts.GetBuildPath()),
 		commands.New("creating archive", utils.CreateArchive, opts.WorkingPath, serverArchiveName, serverDirsToArchive()),
-		commands.New("move archive to server", utils.MoveArchive, opts.WorkingPath+serverArchiveName, serverArchivePath+serverArchiveName),
-		commands.New("delete old archive", utils.DeleteOldArchive, serverArchivePath+"nicm_products_old.zip"),
-		commands.New("rename archive", utils.RenameArchive, serverArchivePath+serverArchiveName, serverArchivePath+"nicm_products_old.zip"),
-		commands.New("unzip archive", utils.Unzip, serverArchivePath+serverArchiveName),
-		commands.New("start job server (job.server)", utils.StartJobServerForScreenName, "job.server"),
-		commands.New("start job server (lni.server)", utils.StartJobServerForScreenName, "lni.server"),
+		commands.New("move archive to server", utils.MoveArchive, *opts.Server, opts.WorkingPath+serverArchiveName, serverArchivePath+serverArchiveName),
+		commands.New("delete old archive", utils.DeleteThing, *opts.Server, serverArchivePath+"nicm_products_old.zip"),
+		commands.New("rename archive", utils.RenameThing, *opts.Server, serverArchivePath+serverArchiveName, serverArchivePath+"nicm_products_old.zip"),
+		commands.New("unzip archive", utils.Unzip, *opts.Server, serverArchivePath+serverArchiveName),
+		commands.New("start job server (job.server)", utils.StartJobServerForScreenName, *opts.Server, "job.server"),
+		commands.New("start job server (lni.server)", utils.StartJobServerForScreenName, *opts.Server, "lni.server"),
 	}
 
 	return newProcess(opts, list)
 }
 
-func NewDTSClujServer() ProcessInterface {
-	opts := options.NewOptionsWithConfigName("dts_cluj_config")
+func NewDTSTestServer() ProcessInterface {
+	opts := options.NewOptionsWithConfigName("dts_test_config")
+
+	//cmds := commands.NewCommandsFromConfig("dts_test_commands")
+	list := []commands.CommandInterface{
+		//commands.New("git pull", utils.ExecuteGitPull, opts.GetGitPath()),
+		//commands.New("build jars", utils.BuildJars, opts.GetBuildPath()),
+		//commands.New("creating archive", utils.CreateArchive, opts.WorkingPath, serverArchiveName, serverDirsToArchive()),
+		commands.New("rename archive", utils.RenameThing, *opts.Server, dtsTestArchivePath+serverArchiveName, serverArchivePath+"nicm_products_old.zip"),
+		commands.New("move archive to server", utils.MoveArchive, *opts.Server, opts.WorkingPath+serverArchiveName, dtsTestArchivePath+serverArchiveName),
+		commands.New("delete old archive", utils.DeleteThing, *opts.Server, dtsTestArchivePath+"nicm_products_old.zip"),
+		commands.New("delete old release", utils.DeleteThing, *opts.Server, dtsTestArchivePath+"nicm_products"),
+		commands.New("unzip archive", utils.Unzip, *opts.Server, dtsTestArchivePath+serverArchiveName),
+		//commands.New("test commands", utils.RunDTSCommands, *opts.Server, cmds),
+	}
+	return newProcess(opts, list)
+}
+
+func NewDTSProdServer() ProcessInterface {
+	opts := options.NewOptionsWithConfigName("dts_prod_config")
 	list := []commands.CommandInterface{
 		commands.New("test commands", utils.TestDTSCommands, *opts.Server),
 	}

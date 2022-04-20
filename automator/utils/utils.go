@@ -240,18 +240,17 @@ func skipDirsFromMagikFiles(path string) bool {
 }
 
 func MoveArchive(args ...interface{}) error {
-	sourcePath := args[0].(string)
-	destPath := args[1].(string)
+	serverOptions := args[0].(options.ServerOptions)
+	sourcePath := args[1].(string)
+	destPath := args[2].(string)
 
 	var client *simplessh.Client
 	var err error
 
-	host, username, password := config.GetCredentials()
-	if client, err = simplessh.ConnectWithPassword(host, username, password); err != nil {
+	if client, err = simplessh.ConnectWithPassword(serverOptions.Host, serverOptions.Username, serverOptions.Password); err != nil {
 		return err
 	}
 	defer client.Close()
-
 	err = client.Upload(sourcePath, destPath)
 	if err != nil {
 		return err
@@ -260,14 +259,14 @@ func MoveArchive(args ...interface{}) error {
 	return nil
 }
 
-func RenameArchive(args ...interface{}) error {
-	currentName := args[0].(string)
-	newName := args[1].(string)
+func RenameThing(args ...interface{}) error {
+	serverOptions := args[0].(options.ServerOptions)
+	currentName := args[1].(string)
+	newName := args[2].(string)
 	var client *simplessh.Client
 	var err error
 
-	host, username, password := config.GetCredentials()
-	if client, err = simplessh.ConnectWithPassword(host, username, password); err != nil {
+	if client, err = simplessh.ConnectWithPassword(serverOptions.Host, serverOptions.Username, serverOptions.Password); err != nil {
 		return err
 	}
 	defer client.Close()
@@ -280,14 +279,14 @@ func RenameArchive(args ...interface{}) error {
 	return nil
 }
 
-func DeleteOldArchive(args ...interface{}) error {
-	name := args[0].(string)
+func DeleteThing(args ...interface{}) error {
+	serverOptions := args[0].(options.ServerOptions)
+	name := args[1].(string)
 
 	var client *simplessh.Client
 	var err error
 
-	host, username, password := config.GetCredentials()
-	if client, err = simplessh.ConnectWithPassword(host, username, password); err != nil {
+	if client, err = simplessh.ConnectWithPassword(serverOptions.Host, serverOptions.Username, serverOptions.Password); err != nil {
 		return err
 	}
 	defer client.Close()
@@ -301,13 +300,13 @@ func DeleteOldArchive(args ...interface{}) error {
 }
 
 func Unzip(args ...interface{}) error {
-	zipName := args[0].(string)
+	serverOptions := args[0].(options.ServerOptions)
+	zipName := args[1].(string)
 
 	var client *simplessh.Client
 	var err error
 
-	host, username, password := config.GetCredentials()
-	if client, err = simplessh.ConnectWithPassword(host, username, password); err != nil {
+	if client, err = simplessh.ConnectWithPassword(serverOptions.Host, serverOptions.Username, serverOptions.Password); err != nil {
 		return err
 	}
 	defer client.Close()
@@ -321,13 +320,13 @@ func Unzip(args ...interface{}) error {
 }
 
 func BuildImage(args ...interface{}) error {
-	shellBatPath := args[0].(string)
+	serverOptions := args[0].(options.ServerOptions)
+	shellBatPath := args[1].(string)
 
 	var client *simplessh.Client
 	var err error
 
-	host, username, password := config.GetCredentials()
-	if client, err = simplessh.ConnectWithPassword(host, username, password); err != nil {
+	if client, err = simplessh.ConnectWithPassword(serverOptions.Host, serverOptions.Username, serverOptions.Password); err != nil {
 		return err
 	}
 	defer client.Close()
@@ -341,23 +340,28 @@ func BuildImage(args ...interface{}) error {
 }
 
 func StartJobServerForScreenName(args ...interface{}) error {
-	screenName := args[0].(string)
-	host, username, password := config.GetCredentials()
-	so := options.ServerOptions{
-		Host:     host,
-		Username: username,
-		Password: password,
-	}
-	return RunRemoteCommands2(so, screenName, []string{"quit()", "start ...."})
+	serverOptions := args[0].(options.ServerOptions)
+	screenName := args[1].(string)
+
+	return RunRemoteCommandsList(serverOptions, screenName, []string{"quit()", "start ...."})
 }
 
 func TestDTSCommands(args ...interface{}) error {
 	serverOptions := args[0].(options.ServerOptions)
 
-	return RunRemoteCommands2(serverOptions, "", []string{"pwd", "cd /dts/orange.ro/", "pwd"})
+	return RunRemoteCommandsList(serverOptions, "", []string{"pwd", "cd /dts/orange.ro/", "pwd"})
 }
 
-func RunRemoteCommands2(so options.ServerOptions, screenName string, commands []string) error {
+func RunDTSCommands(args ...interface{}) error {
+	serverOptions := args[0].(options.ServerOptions)
+	cmds := args[1].([]string)
+	if len(cmds) == 0 {
+		return nil
+	}
+	return RunRemoteCommandsList(serverOptions, "", cmds)
+}
+
+func RunRemoteCommandsList(so options.ServerOptions, screenName string, commands []string) error {
 	var client *simplessh.Client
 	var err error
 
@@ -383,9 +387,9 @@ func RunRemoteCommands2(so options.ServerOptions, screenName string, commands []
 			command.WriteString(" && ")
 			command.WriteString(cmd)
 		}
-		fmt.Println(idx, " -> ", command.String())
+		//fmt.Println(idx, " -> ", command.String())
 	}
-
+	fmt.Println("Executing command: ", command.String())
 	output, err := client.Exec(command.String())
 	if err != nil {
 		return err

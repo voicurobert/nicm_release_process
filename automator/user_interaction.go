@@ -14,6 +14,8 @@ const (
 	ServerReleaseProcess = "server_release"
 	NIGReleaseProcess    = "nig_release"
 	GearsReleaseProcess  = "gears_release"
+	DTSTestRelease       = "dts_test_release"
+	DTSProdRelease       = "dts_prod_release"
 	PreviousProcess      = "back"
 	ExecuteProcess       = "execute"
 	PrintCommands        = "print_commands"
@@ -51,7 +53,8 @@ func initProcesses() {
 	initServerProcess()
 	initNIGProcess()
 	initGearsProcess()
-	initDTSProcess()
+	initDTSTestProcess()
+	initDTSProdProcess()
 }
 
 func initDefaultProcesses(process, next UserInteraction) {
@@ -96,10 +99,18 @@ func initGearsProcess() {
 	initDefaultProcesses(&gearsReleaseProcess, MainInteraction)
 }
 
-func initDTSProcess() {
-	dtsProcess := userInteraction{Name: "dts_release", releaseProcess: NewDTSClujServer()}
+func initDTSTestProcess() {
+	dtsProcess := userInteraction{Name: DTSTestRelease, releaseProcess: NewDTSTestServer()}
 
-	MainInteraction.setNextInteraction("dts_release", &dtsProcess)
+	MainInteraction.setNextInteraction(DTSTestRelease, &dtsProcess)
+
+	initDefaultProcesses(&dtsProcess, MainInteraction)
+}
+
+func initDTSProdProcess() {
+	dtsProcess := userInteraction{Name: DTSProdRelease, releaseProcess: NewDTSProdServer()}
+
+	MainInteraction.setNextInteraction(DTSProdRelease, &dtsProcess)
 
 	initDefaultProcesses(&dtsProcess, MainInteraction)
 }

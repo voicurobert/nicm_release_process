@@ -3,6 +3,7 @@ package commands
 import (
 	"fmt"
 	"github.com/fatih/color"
+	"github.com/voicurobert/nicm_release_process/automator/config"
 	"strings"
 )
 
@@ -30,6 +31,19 @@ func (c *command) Execute() error {
 		fmt.Println()
 	}
 	return nil
+}
+
+func NewCommandsFromConfig(cfgName string) []string {
+	list := make([]string, 0)
+	cfgMap := config.GetConfig()
+	clientMap, ok := cfgMap[cfgName]
+	if !ok {
+		return list
+	}
+	for _, cmd := range clientMap {
+		list = append(list, cmd)
+	}
+	return list
 }
 
 func (c *command) Print(tabs int) {
