@@ -41,8 +41,9 @@ func (r *process) PrintCommands(tabs int) {
 
 const (
 	archiveName        = "nicm.zip"
-	serverArchiveName  = "nicm_products_new.zip"
+	serverArchiveName  = "nicm_products.zip"
 	serverArchivePath  = "/home/laur/nicm/"
+	dtsArchiveName     = "nicm_products.zip"
 	dtsTestArchivePath = "/dts/sw529/nicm/"
 	dtsProdArchivePath = "/dts/sw529/nicm/"
 )
@@ -72,17 +73,18 @@ func NewDTSTestServer() ProcessInterface {
 	opts := options.NewOptionsWithConfigName("dts_test_config")
 
 	cmds := commands.NewCommandsFromConfig("dts_test_commands")
+
 	path := opts.WorkingPath + opts.GitPath
 	list := []commands.CommandInterface{
 		commands.New("git pull", utils.ExecuteGitPull, opts.GetGitPath()),
 		commands.New("build jars", utils.BuildJars, opts.GetBuildPath()),
-		commands.New("creating archive", utils.CreateArchive, path, serverArchiveName, []string{"nicm_products\\"}),
-		commands.New("delete old nicm_products", utils.DeleteThing, *opts.Server, dtsTestArchivePath+"nicm_products_old"),
-		commands.New("rename nicm_products", utils.RenameThing, *opts.Server, dtsTestArchivePath+"nicm_products", serverArchivePath+"nicm_products_old"),
-		commands.New("delete old archive", utils.DeleteThing, *opts.Server, dtsTestArchivePath+"nicm_products.zip"),
-		commands.New("move archive to server", utils.MoveArchive, *opts.Server, path+serverArchiveName, dtsTestArchivePath+serverArchiveName),
-		commands.New("unzip archive", utils.Unzip, *opts.Server, dtsTestArchivePath+serverArchiveName),
-		commands.New("test commands", utils.RunDTSCommands, *opts.Server, cmds),
+		commands.New("creating archive", utils.CreateArchive, path, dtsArchiveName, []string{"nicm_products\\"}),
+		commands.New("delete nicm_products_old", utils.DeleteThing, *opts.Server, dtsTestArchivePath+"nicm_products_old"),
+		commands.New("rename nicm_products", utils.RenameThing, *opts.Server, dtsTestArchivePath+"nicm_products", dtsTestArchivePath+"nicm_products_old"),
+		commands.New("delete old archive", utils.DeleteThing, *opts.Server, dtsTestArchivePath+dtsArchiveName),
+		commands.New("move archive to server", utils.MoveArchive, *opts.Server, path+dtsArchiveName, dtsTestArchivePath+dtsArchiveName),
+		commands.New("unzip archive", utils.Unzip, *opts.Server, dtsTestArchivePath, dtsArchiveName),
+		commands.New("run commands", utils.RunDTSCommands, *opts.Server, cmds),
 	}
 	return newProcess(opts, list)
 }

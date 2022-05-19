@@ -44,6 +44,7 @@ var (
 
 func DeleteFiles(args ...interface{}) error {
 	rootDir := args[0].(string)
+
 	fileExtension := args[1].(string)
 	return filepath.Walk(rootDir, func(path string, info fs.FileInfo, err error) error {
 		if info.IsDir() {
@@ -184,7 +185,7 @@ func addFiles(w *zip.Writer, rootDir string, dirsToSkip []string) error {
 
 		path = strings.TrimPrefix(path, rootDir+"/")
 
-		if strings.HasSuffix(path, ".magik") {
+		if strings.HasSuffix(path, ".magik") || strings.HasSuffix(path, ".magik~") {
 			if !skipDirsFromMagikFiles(path) {
 				return nil
 			}
@@ -228,6 +229,7 @@ func skipDirsFromMagikFiles(path string) bool {
 		"nicm_products\\nicm_build",
 		"nicm_products\\nicm\\source\\release_patches",
 		"nicm_products\\nicm\\hotfixes",
+		"nicm_products\\nicm_dts\\modules\\nicm_dts_image",
 		"nicm_products\\rwee_extensions\\hotfixes",
 		"nicm\\dynamic_patches"}
 
@@ -281,6 +283,7 @@ func RenameThing(args ...interface{}) error {
 }
 
 func DeleteThing(args ...interface{}) error {
+	// todo check file existence
 	serverOptions := args[0].(options.ServerOptions)
 	name := args[1].(string)
 
@@ -291,7 +294,8 @@ func DeleteThing(args ...interface{}) error {
 		return err
 	}
 	defer client.Close()
-	_, err = client.Exec(fmt.Sprintf("rm %s", name))
+	fmt.Println(name)
+	_, err = client.Exec(fmt.Sprintf("rm -rf %s", name))
 
 	if err != nil {
 		return err
@@ -302,7 +306,8 @@ func DeleteThing(args ...interface{}) error {
 
 func Unzip(args ...interface{}) error {
 	serverOptions := args[0].(options.ServerOptions)
-	zipName := args[1].(string)
+	path := args[1].(string)
+	zipName := args[2].(string)
 
 	var client *simplessh.Client
 	var err error
@@ -311,7 +316,8 @@ func Unzip(args ...interface{}) error {
 		return err
 	}
 	defer client.Close()
-	_, err = client.Exec(fmt.Sprintf("unzip %s", zipName))
+
+	_, err = client.Exec(fmt.Sprintf("unzip %s -d %s", path+zipName, path))
 
 	if err != nil {
 		return err
