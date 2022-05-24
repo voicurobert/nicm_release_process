@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/fatih/color"
 	"github.com/voicurobert/nicm_release_process/automator/config"
+	"strconv"
 	"strings"
 )
 
@@ -34,14 +35,18 @@ func (c *command) Execute() error {
 }
 
 func NewCommandsFromConfig(cfgName string) []string {
-	list := make([]string, 0)
+
 	cfgMap := config.GetConfig()
 	clientMap, ok := cfgMap[cfgName]
+	list := make([]string, len(clientMap))
+
 	if !ok {
 		return list
 	}
-	for _, cmd := range clientMap {
-		list = append(list, cmd)
+	for idx, cmd := range clientMap {
+		intIdx, _ := strconv.Atoi(idx)
+		list[intIdx-1] = cmd
+		//list = append(list, cmd)
 	}
 	return list
 }
